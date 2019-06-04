@@ -8,14 +8,25 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.*;
+
 
 @Configuration
-@EnableGlobalMethodSecurity (securedEnabled = true)
+@EnableGlobalMethodSecurity(securedEnabled = true)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
+    private UserDetailsService userService;
+
+    @Autowired
+    public void configureAuth(AuthenticationManagerBuilder auth) throws Exception {
+        auth.userDetailsService(userService).passwordEncoder(passwordEncoder());
+    }
+
+    /*@Autowired
     public void configureAuth(AuthenticationManagerBuilder auth) throws Exception {
         auth
                 .inMemoryAuthentication()
@@ -29,24 +40,26 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                     .password(passwordEncoder().encode("1234"))
                     .roles("ADMIN");
 
-    }
+    }*/
 
     @Bean
     public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
-    protected void configure (HttpSecurity httpSec) throws Exception {
+
+
+    protected void configure(HttpSecurity httpSec) throws Exception {
         httpSec
                 .authorizeRequests()
-                    .antMatchers(HttpMethod.GET, "/").permitAll()
-                    .antMatchers("/delete").hasRole("ADMIN")
-                    .antMatchers("/admin/**").hasRole("ADMIN")
-                    .antMatchers("/registration").permitAll()
-                    .antMatchers("/db/**").permitAll()
+                .antMatchers(HttpMethod.GET, "/").permitAll()
+                .antMatchers("/delete").hasRole("ADMIN")
+                .antMatchers("/admin/**").hasRole("ADMIN")
+                .antMatchers("/registration").permitAll()
+                .antMatchers("/db/**").permitAll()
                 .and()
-                    .formLogin()
-                    .permitAll()
+                .formLogin()
+                .permitAll()
                 .and()
                 .csrf().ignoringAntMatchers("/db/**")
                 .and()

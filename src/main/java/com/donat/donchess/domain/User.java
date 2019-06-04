@@ -14,10 +14,10 @@ public class User {
     @Generated
     private Long id;
 
-    @Column(name = "email", length = 50, unique = true, nullable = false)
+    @Column(name = "email", length = 250, unique = true, nullable = false)
     private String email;
 
-    @Column(name = "password", length = 50, nullable = false)
+    @Column(name = "password", length = 250, nullable = false)
     private String password;
 
     private String fullname;
