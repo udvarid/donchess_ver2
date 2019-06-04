@@ -14,8 +14,10 @@ public class User {
     @Generated
     private Long id;
 
+    @Column(name = "email", length = 50, unique = true, nullable = false)
     private String email;
 
+    @Column(name = "password", length = 50, nullable = false)
     private String password;
 
     private String fullname;
@@ -58,6 +60,14 @@ public class User {
 
     public void setFullname(String fullname) {
         this.fullname = fullname;
+    }
+
+    public Set<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(Set<Role> roles) {
+        this.roles = roles;
     }
 
     @Override
