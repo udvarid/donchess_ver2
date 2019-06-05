@@ -12,6 +12,11 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.*;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
 
 
 @Configuration
@@ -52,10 +57,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity httpSec) throws Exception {
         httpSec
                 .authorizeRequests()
-                .antMatchers(HttpMethod.GET, "/").permitAll()
-                .antMatchers("/delete").hasRole("ADMIN")
                 .antMatchers("/admin/**").hasRole("ADMIN")
-                .antMatchers("/registration").permitAll()
+                .antMatchers("/api/user/register").permitAll()
+                .antMatchers(HttpMethod.GET, "/").permitAll()
                 .antMatchers("/db/**").permitAll()
                 .and()
                 .formLogin()
@@ -65,4 +69,5 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .headers().frameOptions().disable();
     }
+
 }

@@ -27,7 +27,7 @@ public class EmailService {
             message.setFrom(MESSAGE_FROM);
             message.setTo(newUser.getEmail());
             message.setSubject("DonChess registration - authentication");
-            message.setText("Please click here: \n http://localhost:8080/api/user/authenticaton?token=" + newUser.getAuthenticationToken());
+            message.setText("Please click here: \n http://localhost:8080/api/user/confirmation?token=" + newUser.getAuthenticationToken());
             javaMailSender.send(message);
         } catch (Exception e) {
             e.printStackTrace();
