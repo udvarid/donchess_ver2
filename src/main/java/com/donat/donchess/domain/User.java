@@ -1,7 +1,5 @@
 package com.donat.donchess.domain;
 
-import lombok.Generated;
-
 import javax.persistence.*;
 import java.util.HashSet;
 import java.util.Set;
@@ -11,7 +9,7 @@ import java.util.Set;
 public class User {
 
     @Id
-    @Generated
+    @GeneratedValue
     private Long id;
 
     @Column(name = "email", length = 250, unique = true, nullable = false)
