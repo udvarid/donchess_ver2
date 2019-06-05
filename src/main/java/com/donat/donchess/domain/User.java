@@ -22,6 +22,10 @@ public class User {
 
     private String fullname;
 
+    private String authenticationToken;
+
+    private boolean enabled;
+
     @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinTable(
             name = "users_roles",
@@ -68,6 +72,22 @@ public class User {
 
     public void setRoles(Set<Role> roles) {
         this.roles = roles;
+    }
+
+    public String getAuthenticationToken() {
+        return authenticationToken;
+    }
+
+    public void setAuthenticationToken(String authenticationToken) {
+        this.authenticationToken = authenticationToken;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     @Override

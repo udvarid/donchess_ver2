@@ -1,5 +1,6 @@
 package com.donat.donchess.service;
 
+import com.donat.donchess.domain.User;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -17,23 +18,20 @@ public class EmailService {
         this.javaMailSender = javaMailSender;
     }
 
-    public void sendMessage(String mail) {
+
+    public void sendAuthenticatonMail(User newUser) {
         SimpleMailMessage message;
 
         try {
             message = new SimpleMailMessage();
             message.setFrom(MESSAGE_FROM);
-            message.setTo(mail);
-            message.setSubject("Udvozlo uzenet");
-            message.setText("Hello! Ez itt az üzenet, \n amit neked küldünk");
+            message.setTo(newUser.getEmail());
+            message.setSubject("DonChess registration - authentication");
+            message.setText("Please click here: \n http://localhost:8080/api/user/authenticaton?token=" + newUser.getAuthenticationToken());
             javaMailSender.send(message);
         } catch (Exception e) {
             e.printStackTrace();
         }
+
     }
-
-
-
-
-
 }
