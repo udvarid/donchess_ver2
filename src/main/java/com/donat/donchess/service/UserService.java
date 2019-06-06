@@ -39,8 +39,7 @@ public class UserService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         User user = findByEmail(email);
-        if (user == null) {
-            //TODO ha még nem konfirmálta a regisztrációját, dobjuk ki
+        if (user == null || !user.isEnabled()) {
             throw new UsernameNotFoundException(email);
         }
         return new UserDetailsImpl(user);
