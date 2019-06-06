@@ -1,0 +1,66 @@
+package com.donat.donchess.domain;
+
+import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "challenges")
+public class Challenge {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @OneToOne
+    @NotNull
+    private User challenger;
+
+    @OneToOne
+    private User challenged;
+
+    private String status;
+    //TODO ezt később enumra cserélni
+
+    private LocalDateTime creatonTime;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public User getChallenger() {
+        return challenger;
+    }
+
+    public void setChallenger(User challenger) {
+        this.challenger = challenger;
+    }
+
+    public User getChallenged() {
+        return challenged;
+    }
+
+    public void setChallenged(User challenged) {
+        this.challenged = challenged;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public LocalDateTime getCreatonTime() {
+        return creatonTime;
+    }
+
+    public void setCreatonTime(LocalDateTime creatonTime) {
+        this.creatonTime = creatonTime;
+    }
+}
