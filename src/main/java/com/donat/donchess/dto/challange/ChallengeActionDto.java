@@ -1,4 +1,4 @@
-package com.donat.donchess.dto;
+package com.donat.donchess.dto.challange;
 
 public class ChallengeActionDto {
 

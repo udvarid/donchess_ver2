@@ -53,14 +53,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
 
-
     protected void configure(HttpSecurity httpSec) throws Exception {
         httpSec
                 .authorizeRequests()
                 .antMatchers("/admin/**").hasRole("ADMIN")
-                .antMatchers(HttpMethod.POST,"/api/user/register/").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/user/register/**").permitAll()
                 .antMatchers(HttpMethod.GET, "/").permitAll()
                 .antMatchers("/db/**").permitAll()
+                .and().cors()
+                .and().csrf()
                 .and()
                 .formLogin()
                 .permitAll()

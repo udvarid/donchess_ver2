@@ -19,9 +19,6 @@ public class Challenge {
     @OneToOne
     private User challenged;
 
-    private String status;
-    //TODO ezt később enumra cserélni
-
     private LocalDateTime creatonTime;
 
     public Long getId() {
@@ -46,14 +43,6 @@ public class Challenge {
 
     public void setChallenged(User challenged) {
         this.challenged = challenged;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
     }
 
     public LocalDateTime getCreatonTime() {
