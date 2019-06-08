@@ -8,6 +8,7 @@ import com.donat.donchess.repository.RoleRepository;
 import com.donat.donchess.repository.UserRepository;
 import com.donat.donchess.security.UserDetailsImpl;
 import net.bytebuddy.utility.RandomString;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -111,6 +112,7 @@ public class UserService implements UserDetailsService {
             userDto.setRole(user.getRoles().toString());
             userDtos.add(userDto);
         });
+
 
         return userDtos;
 

@@ -8,17 +8,11 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.*;
 import org.springframework.security.web.savedrequest.NullRequestCache;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.Arrays;
 
 
 @Configuration
@@ -33,45 +27,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         auth.userDetailsService(userService).passwordEncoder(passwordEncoder());
     }
 
-    /*@Autowired
-    public void configureAuth(AuthenticationManagerBuilder auth) throws Exception {
-        auth
-                .inMemoryAuthentication()
-                    .passwordEncoder(passwordEncoder())
-                    .withUser("udvarid")
-                    .password(passwordEncoder().encode("1234"))
-                    .roles("USER")
-                .and()
-                    .passwordEncoder(passwordEncoder())
-                    .withUser("admin")
-                    .password(passwordEncoder().encode("1234"))
-                    .roles("ADMIN");
-
-    }*/
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
 
-
-/*    protected void configure(HttpSecurity httpSec) throws Exception {
-        httpSec
-                .authorizeRequests()
-                .antMatchers("/admin/**").hasRole("ADMIN")
-                .antMatchers(HttpMethod.POST, "/api/user/register/**").permitAll()
-                .antMatchers(HttpMethod.GET, "/").permitAll()
-                .antMatchers("/db/**").permitAll()
-                .and().cors()
-                .and().csrf()
-                .and()
-                .formLogin()
-                .permitAll()
-                .and()
-                .csrf().ignoringAntMatchers("/db/**")
-                .and()
-                .headers().frameOptions().disable();
-    }*/
 
     protected void configure(HttpSecurity httpSec) throws Exception {
         httpSec

@@ -2,16 +2,17 @@ package com.donat.donchess.service;
 
 import com.donat.donchess.domain.Challenge;
 import com.donat.donchess.domain.User;
+import com.donat.donchess.dto.challange.ChallengeAction;
 import com.donat.donchess.dto.challange.ChallengeActionDto;
 import com.donat.donchess.dto.challange.ChallengeCreateDto;
 import com.donat.donchess.dto.challange.ChallengeDto;
 import com.donat.donchess.repository.ChallengeRepository;
 import com.donat.donchess.repository.UserRepository;
+import org.apache.commons.lang3.EnumUtils;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -22,10 +23,13 @@ public class ChallengeService {
 
     private ChallengeRepository challengeRepository;
     private UserRepository userRepository;
+    private SecurityService securityService;
 
-    public ChallengeService(ChallengeRepository challengeRepository, UserRepository userRepository) {
+    public ChallengeService(ChallengeRepository challengeRepository, UserRepository userRepository,
+                            SecurityService securityService) {
         this.challengeRepository = challengeRepository;
         this.userRepository = userRepository;
+        this.securityService = securityService;
     }
 
     public Set<ChallengeDto> findAll() {
@@ -48,23 +52,24 @@ public class ChallengeService {
 
     public void create(ChallengeCreateDto challengeCreateDto) throws Exception {
 
-        //TODO security check: a beküldő id-ja megegyezik a Challenged id-jával?
-
-        User challenger = userRepository.findById(challengeCreateDto.getChallengerId())
-                .orElseThrow(() -> new Exception("Not valid challenger id"));
+        User challenger = securityService.getChallenger();
 
         User challenged = null;
 
         if (challengeCreateDto.getChallengedId() != null) {
-            if (challengeCreateDto.getChallengedId().equals(challengeCreateDto.getChallengerId())) {
+            if (challengeCreateDto.getChallengedId().equals(challenger.getId())) {
                 throw new Exception("Same Id at challenger and challenged");
             }
 
             challenged = userRepository.findById(challengeCreateDto.getChallengedId())
                     .orElseThrow(() -> new Exception("Not valid challenged id"));
 
+            if (!challenged.isEnabled()) {
+                throw new Exception("Challegned user is not activated yet");
+            }
+
             for (Challenge challenge : challengeRepository.findAll()) {
-                if (activeAndSameChallange(challenge, challengeCreateDto)) {
+                if (activeAndSameChallange(challenge, challenger, challenged)) {
                     throw new Exception("There is a same challenge!");
                 }
             }
@@ -78,9 +83,9 @@ public class ChallengeService {
         challengeRepository.saveAndFlush(newChallenge);
     }
 
-    private boolean activeAndSameChallange(Challenge challenge, ChallengeCreateDto challengeCreateDto) {
-        return !challenge.getChallenger().getId().equals(challengeCreateDto.getChallengerId()) &&
-                !challenge.getChallenged().getId().equals(challengeCreateDto.getChallengedId());
+    private boolean activeAndSameChallange(Challenge challenge, User challenger, User challenged) {
+        return !challenge.getChallenger().equals(challenger) &&
+                !challenge.getChallenged().equals(challenged);
     }
 
     public void manageAnswer(ChallengeActionDto challengeActionDto) throws Exception {
@@ -88,16 +93,37 @@ public class ChallengeService {
         Challenge challenge = challengeRepository.findById(challengeActionDto.getChallengeId())
                 .orElseThrow(() -> new Exception("Not valid challenge id"));
 
-        //TODO validálni a Action parancsokat (DELETE, ACCEPT, DECLINE)
-        //TODO kiszedni a beküldő User-t, mert ha nyitott kihívást fogadott el, be kell írni
-        //TODO security check : Ha az action DELETE, akkor a beküldő ID-ja megegyezik e challenger id-jával
-        //TODO security check : Ha az action DECLINE, akkor a beküldő ID-ja megegyezik e challenged id-jával ill. ilyen esetben van e challenged user
-        //TODO security check: Ha az action DECLINE vagy ACCEPT, akkor a beküldő ID-ja nem egyezik meg a chellenger id-jával
+        if (!validActions(challengeActionDto)) {
+            throw new Exception("Not valid action!");
+        }
+        User answerGiver = securityService.getChallenger();
 
-        if (challengeActionDto.getChallengeAction().equals("ACCEPT")) {
-            //TODO új játék létrehozása
+        if (challengeActionDto.getChallengeAction().equals(ChallengeAction.DELETE)) {
+            if (!challenge.getChallenger().equals(answerGiver)) {
+                throw new Exception("Only the creator of challenger can delete it!");
+            }
+        } else {
+            if (challenge.getChallenger().equals(answerGiver)) {
+                throw new Exception("The creator of challenge can't decline or accept it!");
+            }
+            if (challengeActionDto.getChallengeAction().equals(ChallengeAction.DECLINE)) {
+                if (!answerGiver.equals(challenge.getChallenged())) {
+                    throw new Exception("Only the challenged User can decline!");
+                }
+            }
+            if (challengeActionDto.getChallengeAction().equals(ChallengeAction.ACCEPT)) {
+                if (challenge.getChallenged().equals(null)) {
+                    challenge.setChallenged(answerGiver);
+                }
+                //TODO új játék létrehozása
+                System.out.println("New game has been created!");
+            }
         }
         challengeRepository.delete(challenge);
 
+    }
+
+    private boolean validActions(ChallengeActionDto challengeActionDto) {
+        return EnumUtils.isValidEnum(ChallengeAction.class, challengeActionDto.getChallengeAction().name());
     }
 }
