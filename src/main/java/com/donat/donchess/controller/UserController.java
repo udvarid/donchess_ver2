@@ -25,7 +25,7 @@ public class UserController {
         return userService.prepareList();
     }
 
-    @PostMapping("/register")
+    @GetMapping("/register")
     public ResponseEntity register(@RequestBody RegisterDto registerDto) throws Exception {
         userService.registerUser(registerDto);
         return new ResponseEntity(HttpStatus.OK);

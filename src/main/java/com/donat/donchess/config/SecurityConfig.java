@@ -8,10 +8,12 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.*;
+import org.springframework.security.web.savedrequest.NullRequestCache;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -53,7 +55,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
 
-    protected void configure(HttpSecurity httpSec) throws Exception {
+/*    protected void configure(HttpSecurity httpSec) throws Exception {
         httpSec
                 .authorizeRequests()
                 .antMatchers("/admin/**").hasRole("ADMIN")
@@ -69,6 +71,20 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .csrf().ignoringAntMatchers("/db/**")
                 .and()
                 .headers().frameOptions().disable();
-    }
+    }*/
 
+    protected void configure(HttpSecurity httpSec) throws Exception {
+        httpSec
+                .csrf().ignoringAntMatchers("/**").and()
+                .authorizeRequests().antMatchers(HttpMethod.GET, "/**").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/**").hasAnyRole("ADMIN", "USER")
+                .antMatchers(HttpMethod.PUT, "/api/**").hasAnyRole("ADMIN", "USER")
+                .antMatchers(HttpMethod.DELETE, "/api/**").hasAnyRole("ADMIN", "USER")
+                .and().requestCache().requestCache(new NullRequestCache()).and()
+                .cors().and()
+                .headers().frameOptions().disable()
+                .and()
+                .formLogin()
+                .permitAll();
+    }
 }

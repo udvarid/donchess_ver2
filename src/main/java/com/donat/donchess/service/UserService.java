@@ -98,6 +98,8 @@ public class UserService implements UserDetailsService {
         userRepository.saveAndFlush(user);
     }
 
+    //TODO rendszeresen tisztítani az aktiválatlan regisztrációkat - ehhez kell a regisztráció ideje is
+
     public Set<UserDto> prepareList() {
         List<User> users = userRepository.findAll();
         Set<UserDto> userDtos = new HashSet<>();

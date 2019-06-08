@@ -10,6 +10,8 @@ import com.donat.donchess.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -38,6 +40,7 @@ public class ChallengeService {
             }
             challengeDto.setChallengerId(challenge.getChallenger().getId());
             challengeDto.setId(challenge.getId());
+            challengeDtos.add(challengeDto);
         });
 
         return challengeDtos;
@@ -70,6 +73,7 @@ public class ChallengeService {
         Challenge newChallenge = new Challenge();
         newChallenge.setChallenged(challenged);
         newChallenge.setChallenger(challenger);
+        newChallenge.setCreatonTime(LocalDateTime.now());
 
         challengeRepository.saveAndFlush(newChallenge);
     }

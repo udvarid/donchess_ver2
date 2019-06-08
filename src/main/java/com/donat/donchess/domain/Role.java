@@ -12,7 +12,6 @@ public class Role {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    //TODO ezt majd enum-ra kicserélni
     private String role;
 
     public Long getId() {

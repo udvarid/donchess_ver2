@@ -4,9 +4,7 @@ public class ChallengeActionDto {
 
     private Long challengeId;
 
-    private String challengeAction;
-    //TODO ezt enumra cserélni
-
+    private ChallengeAction challengeAction;
 
     public Long getChallengeId() {
         return challengeId;
@@ -16,11 +14,11 @@ public class ChallengeActionDto {
         this.challengeId = challengeId;
     }
 
-    public String getChallengeAction() {
+    public ChallengeAction getChallengeAction() {
         return challengeAction;
     }
 
-    public void setChallengeAction(String challengeAction) {
+    public void setChallengeAction(ChallengeAction challengeAction) {
         this.challengeAction = challengeAction;
     }
 }

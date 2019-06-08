@@ -6,10 +6,7 @@ import com.donat.donchess.dto.challange.ChallengeDto;
 import com.donat.donchess.service.ChallengeService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Set;
 
@@ -28,15 +25,13 @@ public class ChallengeController {
         return challengeService.findAll();
     }
 
-    //TODO challenge kreálása
-    @GetMapping("/create")
+    @PostMapping("/create")
     public ResponseEntity create(@RequestBody ChallengeCreateDto challengeCreateDto) throws Exception {
         challengeService.create(challengeCreateDto);
         return new ResponseEntity(HttpStatus.OK);
     }
 
-    //TODO challenge válasz
-    @GetMapping("/answer")
+    @PostMapping("/answer")
     public ResponseEntity answer(@RequestBody ChallengeActionDto challengeActionDto) throws Exception {
         challengeService.manageAnswer(challengeActionDto);
         return new ResponseEntity(HttpStatus.OK);
