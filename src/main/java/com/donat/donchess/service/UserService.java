@@ -8,7 +8,6 @@ import com.donat.donchess.repository.RoleRepository;
 import com.donat.donchess.repository.UserRepository;
 import com.donat.donchess.security.UserDetailsImpl;
 import net.bytebuddy.utility.RandomString;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -56,7 +55,7 @@ public class UserService implements UserDetailsService {
         if (findByEmail(registerDto.getEmail()) != null) {
             throw new Exception("Already registered user!");
         }
-        if (!validPassword(registerDto.getPassword())) {
+        if (registerDto.getPassword().isEmpty()) {
             throw new Exception("Not valid password!");
         }
         if (registerDto.getFullName().isEmpty()) {
@@ -77,14 +76,6 @@ public class UserService implements UserDetailsService {
 
         userRepository.saveAndFlush(newUser);
 
-    }
-
-    private boolean validPassword(String password) {
-        //TODO password validációt kidolgozni (PIR-es példa), esetleg mező annotációval alkalmazni
-        if (password.isEmpty()) {
-            return false;
-        }
-        return true;
     }
 
     public void confirmUserByToken(String token) throws Exception {

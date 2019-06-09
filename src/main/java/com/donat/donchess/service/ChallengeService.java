@@ -65,7 +65,7 @@ public class ChallengeService {
                     .orElseThrow(() -> new Exception("Not valid challenged id"));
 
             if (!challenged.isEnabled()) {
-                throw new Exception("Challegned user is not activated yet");
+                throw new Exception("Challenged user is not activated yet");
             }
 
             for (Challenge challenge : challengeRepository.findAll()) {
@@ -84,8 +84,8 @@ public class ChallengeService {
     }
 
     private boolean activeAndSameChallange(Challenge challenge, User challenger, User challenged) {
-        return !challenge.getChallenger().equals(challenger) &&
-                !challenge.getChallenged().equals(challenged);
+        return challenge.getChallenger().equals(challenger) &&
+                challenge.getChallenged().equals(challenged);
     }
 
     public void manageAnswer(ChallengeActionDto challengeActionDto) throws Exception {
@@ -98,7 +98,7 @@ public class ChallengeService {
         }
         User answerGiver = securityService.getChallenger();
 
-        if (challengeActionDto.getChallengeAction().equals(ChallengeAction.DELETE)) {
+        if (challengeActionDto.getChallengeAction().equals(ChallengeAction.DELETE.name())) {
             if (!challenge.getChallenger().equals(answerGiver)) {
                 throw new Exception("Only the creator of challenger can delete it!");
             }
@@ -106,15 +106,12 @@ public class ChallengeService {
             if (challenge.getChallenger().equals(answerGiver)) {
                 throw new Exception("The creator of challenge can't decline or accept it!");
             }
-            if (challengeActionDto.getChallengeAction().equals(ChallengeAction.DECLINE)) {
-                if (!answerGiver.equals(challenge.getChallenged())) {
-                    throw new Exception("Only the challenged User can decline!");
-                }
+            if (challengeActionDto.getChallengeAction().equals(ChallengeAction.DECLINE.name()) &&
+                    !answerGiver.equals(challenge.getChallenged())) {
+                throw new Exception("Only the challenged User can decline!");
             }
-            if (challengeActionDto.getChallengeAction().equals(ChallengeAction.ACCEPT)) {
-                if (challenge.getChallenged().equals(null)) {
-                    challenge.setChallenged(answerGiver);
-                }
+            if (challengeActionDto.getChallengeAction().equals(ChallengeAction.ACCEPT.name())) {
+                challenge.setChallenged(answerGiver);
                 //TODO új játék létrehozása
                 System.out.println("New game has been created!");
             }
@@ -124,6 +121,6 @@ public class ChallengeService {
     }
 
     private boolean validActions(ChallengeActionDto challengeActionDto) {
-        return EnumUtils.isValidEnum(ChallengeAction.class, challengeActionDto.getChallengeAction().name());
+        return EnumUtils.isValidEnum(ChallengeAction.class, challengeActionDto.getChallengeAction());
     }
 }

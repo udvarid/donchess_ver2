@@ -4,7 +4,7 @@ public class ChallengeActionDto {
 
     private Long challengeId;
 
-    private ChallengeAction challengeAction;
+    private String challengeAction;
 
     public Long getChallengeId() {
         return challengeId;
@@ -14,11 +14,11 @@ public class ChallengeActionDto {
         this.challengeId = challengeId;
     }
 
-    public ChallengeAction getChallengeAction() {
+    public String getChallengeAction() {
         return challengeAction;
     }
 
-    public void setChallengeAction(ChallengeAction challengeAction) {
+    public void setChallengeAction(String challengeAction) {
         this.challengeAction = challengeAction;
     }
 }

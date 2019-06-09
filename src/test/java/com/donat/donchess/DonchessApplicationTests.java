@@ -13,4 +13,6 @@ public class DonchessApplicationTests {
 	public void contextLoads() {
 	}
 
+	//TODO Rest Api tesztek írása
+
 }

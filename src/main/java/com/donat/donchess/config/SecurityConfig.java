@@ -34,6 +34,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     }
 
 
+    @Override
     protected void configure(HttpSecurity httpSec) throws Exception {
         httpSec
                 .csrf().ignoringAntMatchers("/**").and()
