@@ -6,6 +6,8 @@ import com.donat.donchess.dto.challange.ChallengeAction;
 import com.donat.donchess.dto.challange.ChallengeActionDto;
 import com.donat.donchess.dto.challange.ChallengeCreateDto;
 import com.donat.donchess.dto.challange.ChallengeDto;
+import com.donat.donchess.exceptions.InvalidException;
+import com.donat.donchess.exceptions.NotFoundException;
 import com.donat.donchess.repository.ChallengeRepository;
 import com.donat.donchess.repository.UserRepository;
 import org.apache.commons.lang3.EnumUtils;
@@ -50,7 +52,7 @@ public class ChallengeService {
         return challengeDtos;
     }
 
-    public void create(ChallengeCreateDto challengeCreateDto) throws Exception {
+    public void create(ChallengeCreateDto challengeCreateDto) {
 
         User challenger = securityService.getChallenger();
 
@@ -58,19 +60,19 @@ public class ChallengeService {
 
         if (challengeCreateDto.getChallengedId() != null) {
             if (challengeCreateDto.getChallengedId().equals(challenger.getId())) {
-                throw new Exception("Same Id at challenger and challenged");
+                throw new InvalidException("Same Id at challenger and challenged with id: ", challenger.getId());
             }
 
             challenged = userRepository.findById(challengeCreateDto.getChallengedId())
-                    .orElseThrow(() -> new Exception("Not valid challenged id"));
+                    .orElseThrow(() -> new NotFoundException("Not valid challenged id: ", challengeCreateDto.getChallengedId()));
 
             if (!challenged.isEnabled()) {
-                throw new Exception("Challenged user is not activated yet");
+                throw new InvalidException("Challenged user is not activated yet with id: ", challenged.getId());
             }
 
             for (Challenge challenge : challengeRepository.findAll()) {
                 if (activeAndSameChallange(challenge, challenger, challenged)) {
-                    throw new Exception("There is a same challenge!");
+                    throw new InvalidException("There is a same challenge, challenge id: ", challenge.getId());
                 }
             }
         }
@@ -88,27 +90,27 @@ public class ChallengeService {
                 challenge.getChallenged().equals(challenged);
     }
 
-    public void manageAnswer(ChallengeActionDto challengeActionDto) throws Exception {
+    public void manageAnswer(ChallengeActionDto challengeActionDto) {
 
         Challenge challenge = challengeRepository.findById(challengeActionDto.getChallengeId())
-                .orElseThrow(() -> new Exception("Not valid challenge id"));
+                .orElseThrow(() -> new NotFoundException("Not valid challenge id: ", challengeActionDto.getChallengeId()));
 
         if (!validActions(challengeActionDto)) {
-            throw new Exception("Not valid action!");
+            throw new InvalidException("Not valid action!");
         }
         User answerGiver = securityService.getChallenger();
 
         if (challengeActionDto.getChallengeAction().equals(ChallengeAction.DELETE.name())) {
             if (!challenge.getChallenger().equals(answerGiver)) {
-                throw new Exception("Only the creator of challenger can delete it!");
+                throw new InvalidException("Only the creator of challenger can delete it!");
             }
         } else {
             if (challenge.getChallenger().equals(answerGiver)) {
-                throw new Exception("The creator of challenge can't decline or accept it!");
+                throw new InvalidException("The creator of challenge can't decline or accept it!");
             }
             if (challengeActionDto.getChallengeAction().equals(ChallengeAction.DECLINE.name()) &&
                     !answerGiver.equals(challenge.getChallenged())) {
-                throw new Exception("Only the challenged User can decline!");
+                throw new InvalidException("Only the challenged User can decline!");
             }
             if (challengeActionDto.getChallengeAction().equals(ChallengeAction.ACCEPT.name())) {
                 challenge.setChallenged(answerGiver);

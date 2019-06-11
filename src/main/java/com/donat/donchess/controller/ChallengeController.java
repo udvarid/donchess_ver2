@@ -26,13 +26,13 @@ public class ChallengeController {
     }
 
     @PostMapping("/create")
-    public ResponseEntity create(@RequestBody ChallengeCreateDto challengeCreateDto) throws Exception {
+    public ResponseEntity create(@RequestBody ChallengeCreateDto challengeCreateDto) {
         challengeService.create(challengeCreateDto);
         return new ResponseEntity(HttpStatus.OK);
     }
 
     @PostMapping("/answer")
-    public ResponseEntity answer(@RequestBody ChallengeActionDto challengeActionDto) throws Exception {
+    public ResponseEntity answer(@RequestBody ChallengeActionDto challengeActionDto) {
         challengeService.manageAnswer(challengeActionDto);
         return new ResponseEntity(HttpStatus.OK);
     }

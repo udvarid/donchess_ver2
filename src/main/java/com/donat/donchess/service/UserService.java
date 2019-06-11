@@ -1,19 +1,25 @@
 package com.donat.donchess.service;
 
+import com.donat.donchess.domain.QUser;
 import com.donat.donchess.domain.Role;
 import com.donat.donchess.domain.User;
 import com.donat.donchess.dto.RegisterDto;
 import com.donat.donchess.dto.UserDto;
+import com.donat.donchess.exceptions.InvalidException;
 import com.donat.donchess.repository.RoleRepository;
 import com.donat.donchess.repository.UserRepository;
 import com.donat.donchess.security.UserDetailsImpl;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import net.bytebuddy.utility.RandomString;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.inject.Provider;
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.util.HashSet;
 import java.util.List;
@@ -28,6 +34,9 @@ public class UserService implements UserDetailsService {
     private EmailService emailService;
     private RoleRepository roleRepository;
 
+    @Autowired
+    private Provider<EntityManager> entityManager;
+
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
                        EmailService emailService, RoleRepository roleRepository) {
         this.userRepository = userRepository;
@@ -37,7 +46,7 @@ public class UserService implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String email) {
         User user = findByEmail(email);
         if (user == null || !user.isEnabled()) {
             throw new UsernameNotFoundException(email);
@@ -50,16 +59,15 @@ public class UserService implements UserDetailsService {
         return userRepository.findByEmail(email);
     }
 
-    public void registerUser(RegisterDto registerDto) throws Exception {
-        //TODO egyedi exceptionok gyártása, melyek alapján a SPRING dobjon megkülönböztetett HTTP választ
+    public void registerUser(RegisterDto registerDto) {
         if (findByEmail(registerDto.getEmail()) != null) {
-            throw new Exception("Already registered user!");
+            throw new InvalidException("Already registered user!");
         }
         if (registerDto.getPassword().isEmpty()) {
-            throw new Exception("Not valid password!");
+            throw new InvalidException("Not valid password!");
         }
         if (registerDto.getFullName().isEmpty()) {
-            throw new Exception("Not filled full name!");
+            throw new InvalidException("Not filled full name!");
         }
 
         User newUser = new User();
@@ -78,11 +86,11 @@ public class UserService implements UserDetailsService {
 
     }
 
-    public void confirmUserByToken(String token) throws Exception {
+    public void confirmUserByToken(String token) {
         if (token.isEmpty()) {
-            throw new Exception("Invalid token");
+            throw new InvalidException("Invalid token");
         }
-        User user = userRepository.findByAuthenticationToken(token).orElseThrow(()-> new Exception("Invalid token"));
+        User user = userRepository.findByAuthenticationToken(token).orElseThrow(() -> new InvalidException("Invalid token"));
 
         user.setAuthenticationToken(null);
         user.setEnabled(true);
@@ -93,7 +101,15 @@ public class UserService implements UserDetailsService {
     //TODO rendszeresen tisztítani az aktiválatlan regisztrációkat - ehhez kell a regisztráció ideje is
 
     public Set<UserDto> prepareList() {
-        List<User> users = userRepository.findAll();
+        //List<User> users = userRepository.findAll();
+
+        JPAQueryFactory query = new JPAQueryFactory(entityManager);
+        QUser userFromQ = QUser.user;
+
+        List<User> users = query.selectFrom(userFromQ)
+                .orderBy(userFromQ.email.asc())
+                .fetch();
+
         Set<UserDto> userDtos = new HashSet<>();
 
         users.forEach(user -> {

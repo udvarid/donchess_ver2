@@ -25,13 +25,13 @@ public class UserController {
     }
 
     @GetMapping("/register")
-    public ResponseEntity register(@RequestBody RegisterDto registerDto) throws Exception {
+    public ResponseEntity register(@RequestBody RegisterDto registerDto) {
         userService.registerUser(registerDto);
         return new ResponseEntity(HttpStatus.OK);
     }
 
     @GetMapping("/confirmation")
-    public ResponseEntity confirmation(@RequestParam("token") String token) throws Exception {
+    public ResponseEntity confirmation(@RequestParam("token") String token) {
         userService.confirmUserByToken(token);
         return new ResponseEntity(HttpStatus.OK);
     }
