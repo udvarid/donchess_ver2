@@ -1,6 +1,7 @@
 package com.donat.donchess.service;
 
 import com.donat.donchess.domain.Challenge;
+import com.donat.donchess.domain.QChallenge;
 import com.donat.donchess.domain.User;
 import com.donat.donchess.dto.challange.ChallengeAction;
 import com.donat.donchess.dto.challange.ChallengeActionDto;
@@ -10,9 +11,13 @@ import com.donat.donchess.exceptions.InvalidException;
 import com.donat.donchess.exceptions.NotFoundException;
 import com.donat.donchess.repository.ChallengeRepository;
 import com.donat.donchess.repository.UserRepository;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.apache.commons.lang3.EnumUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.inject.Provider;
+import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -27,6 +32,9 @@ public class ChallengeService {
     private UserRepository userRepository;
     private SecurityService securityService;
 
+    @Autowired
+    private Provider<EntityManager> entityManager;
+
     public ChallengeService(ChallengeRepository challengeRepository, UserRepository userRepository,
                             SecurityService securityService) {
         this.challengeRepository = challengeRepository;
@@ -36,7 +44,14 @@ public class ChallengeService {
 
     public Set<ChallengeDto> findAll() {
 
-        List<Challenge> challenges = challengeRepository.findAll();
+        JPAQueryFactory query = new JPAQueryFactory(entityManager);
+        QChallenge challengeFromQ = QChallenge.challenge;
+
+
+        List<Challenge> challenges = query
+                .selectFrom(challengeFromQ)
+                .orderBy(challengeFromQ.creatonTime.asc())
+                .fetch();
         Set<ChallengeDto> challengeDtos = new HashSet<>();
 
         challenges.forEach(challenge -> {

@@ -56,7 +56,12 @@ public class UserService implements UserDetailsService {
 
 
     public User findByEmail(String email) {
-        return userRepository.findByEmail(email);
+        JPAQueryFactory query = new JPAQueryFactory(entityManager);
+        QUser userFromQ = QUser.user;
+
+        return query.selectFrom(userFromQ)
+                .where(userFromQ.email.eq(email))
+                .fetchOne();
     }
 
     public void registerUser(RegisterDto registerDto) {
@@ -101,13 +106,11 @@ public class UserService implements UserDetailsService {
     //TODO rendszeresen tisztítani az aktiválatlan regisztrációkat - ehhez kell a regisztráció ideje is
 
     public Set<UserDto> prepareList() {
-        //List<User> users = userRepository.findAll();
-
         JPAQueryFactory query = new JPAQueryFactory(entityManager);
         QUser userFromQ = QUser.user;
 
         List<User> users = query.selectFrom(userFromQ)
-                .orderBy(userFromQ.email.asc())
+                .orderBy(userFromQ.fullname.asc())
                 .fetch();
 
         Set<UserDto> userDtos = new HashSet<>();
