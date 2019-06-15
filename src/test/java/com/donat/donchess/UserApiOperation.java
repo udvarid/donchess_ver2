@@ -1,9 +1,9 @@
 package com.donat.donchess;
 
+import com.donat.donchess.dto.RegisterDto;
 import com.donat.donchess.dto.UserDto;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
@@ -30,6 +30,20 @@ public class UserApiOperation {
         return result.getBody();
     }
 
+    public void register(RegisterDto registerDto) {
 
+        restTemplate.postForObject(
+                endpointUrl + "/register",
+                registerDto,
+                ResponseEntity.class);
+    }
+
+    public void confirmRegistration(String token) {
+        restTemplate.exchange(
+                endpointUrl + "/confirmation?token=" + token,
+                HttpMethod.GET,
+                null,
+                ResponseEntity.class);
+    }
 
 }

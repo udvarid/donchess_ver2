@@ -1,6 +1,9 @@
 package com.donat.donchess;
 
 import com.donat.donchess.dto.UserDto;
+import com.donat.donchess.dto.challange.ChallengeActionDto;
+import com.donat.donchess.dto.challange.ChallengeCreateDto;
+import com.donat.donchess.dto.challange.ChallengeDto;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -18,14 +21,33 @@ public class ChallengeApiOperation {
         this.endpointUrl = endpointUrl;
     }
 
-    public List<UserDto> getAll() {
-        ResponseEntity<List<UserDto>> result = restTemplate.exchange(
+    public List<ChallengeDto> getAll() {
+        ResponseEntity<List<ChallengeDto>> result = restTemplate.exchange(
                 endpointUrl + "/list",
                 HttpMethod.GET,
                 null,
-                new ParameterizedTypeReference<List<UserDto>>() {
+                new ParameterizedTypeReference<List<ChallengeDto>>() {
                 });
 
         return result.getBody();
     }
+
+    public ResponseEntity create(ChallengeCreateDto challengeCreateDto) {
+
+        ResponseEntity result = restTemplate.postForObject(
+                endpointUrl + "/create",
+                challengeCreateDto,
+                ResponseEntity.class);
+
+        return result;
+    }
+
+    public void answer(ChallengeActionDto challengeActionDto) {
+
+        restTemplate.postForObject(
+                endpointUrl + "/answer",
+                challengeActionDto,
+                ResponseEntity.class);
+    }
+
 }

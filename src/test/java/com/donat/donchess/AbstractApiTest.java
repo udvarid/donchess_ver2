@@ -53,8 +53,11 @@ public abstract class AbstractApiTest {
         challengeApi = new ChallengeApiOperation(restTemplate, getBaseUrl() + CHALLENGE_ENDPOINT);
     }
 
-    protected void loginAsDonat() {
+    protected void loginAsDonat1() {
         login("udvarid@hotmail.com", "1234");
+    }
+    protected void loginAsDonat2() {
+        login("udvari.donat@gmail.com", "1234");
     }
 
 
