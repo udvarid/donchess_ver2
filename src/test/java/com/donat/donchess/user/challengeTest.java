@@ -3,11 +3,10 @@ package com.donat.donchess.user;
 import com.donat.donchess.AbstractApiTest;
 import com.donat.donchess.domain.Challenge;
 import com.donat.donchess.domain.QChallenge;
+import com.donat.donchess.dto.challange.ChallengeActionDto;
 import com.donat.donchess.dto.challange.ChallengeCreateDto;
 import com.donat.donchess.dto.challange.ChallengeDto;
-import com.donat.donchess.repository.ChallengeRepository;
-import com.donat.donchess.repository.UserRepository;
-import com.donat.donchess.service.SecurityService;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,15 +18,6 @@ import java.util.List;
 import static org.junit.Assert.*;
 
 public class challengeTest extends AbstractApiTest {
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private ChallengeRepository challengeRepository;
-
-    @Autowired
-    private SecurityService securityService;
 
     @Autowired
     private Provider<EntityManager> entityManager;
@@ -66,7 +56,97 @@ public class challengeTest extends AbstractApiTest {
         List<ChallengeDto> challengesAfter = challengeApi.getAll();
 
         assertTrue(challengesCurrent.size() + 1 == challengesAfter.size());
+
+        ChallengeActionDto challengeActionDto = new ChallengeActionDto();
+        challengeActionDto.setChallengeId(challenge2.getId());
+        challengeActionDto.setChallengeAction("DELETE");
+
+        challengeApi.answer(challengeActionDto);
     }
 
+    @Test
+    public void sameChallengerIdAndChallengedIdDeniedTest() {
+        JPAQueryFactory query = new JPAQueryFactory(entityManager);
+        QChallenge challengeFromQ = QChallenge.challenge;
+        loginAsDonat1();
+        ChallengeCreateDto challengeCreateDto = new ChallengeCreateDto();
+        challengeCreateDto.setChallengedId(1l);
+        shouldFail(() -> challengeApi.create(challengeCreateDto));
+    }
+
+    @Test
+    public void notValidChallengedIdTest() {
+        JPAQueryFactory query = new JPAQueryFactory(entityManager);
+        QChallenge challengeFromQ = QChallenge.challenge;
+        loginAsDonat1();
+        ChallengeCreateDto challengeCreateDto = new ChallengeCreateDto();
+        challengeCreateDto.setChallengedId(10000l);
+        shouldFail(() -> challengeApi.create(challengeCreateDto));
+    }
+
+    @Test
+    public void duplicatedChallengeIsDeniedTest() {
+        JPAQueryFactory query = new JPAQueryFactory(entityManager);
+        QChallenge challengeFromQ = QChallenge.challenge;
+        loginAsDonat1();
+        ChallengeCreateDto challengeCreateDto = new ChallengeCreateDto();
+        challengeCreateDto.setChallengedId(2l);
+        challengeApi.create(challengeCreateDto);
+
+        ChallengeCreateDto challengeCreateDto2 = new ChallengeCreateDto();
+        challengeCreateDto2.setChallengedId(2l);
+        shouldFail(() -> challengeApi.create(challengeCreateDto2));
+
+        Challenge challenge = query
+                .selectFrom(challengeFromQ)
+                .where(challengeFromQ.challenger.id.eq(1l)
+                        .and(challengeFromQ.challenged.id.eq(2l)))
+                .fetchOne();
+
+        ChallengeActionDto challengeActionDto = new ChallengeActionDto();
+        challengeActionDto.setChallengeId(challenge.getId());
+        challengeActionDto.setChallengeAction("DELETE");
+
+        challengeApi.answer(challengeActionDto);
+    }
+
+    @Test
+    public void notValidChallengeIdTest() {
+        JPAQueryFactory query = new JPAQueryFactory(entityManager);
+        QChallenge challengeFromQ = QChallenge.challenge;
+        loginAsDonat1();
+
+        List<Challenge> challenges = query.selectFrom(challengeFromQ)
+                .orderBy(challengeFromQ.id.desc())
+                .fetch();
+
+        Long idMax = challenges.size() == 0 ? 1l : challenges.get(0).getId() + 1l;
+
+        System.out.println(idMax);
+
+        ChallengeCreateDto challengeCreateDto = new ChallengeCreateDto();
+        challengeCreateDto.setChallengedId(idMax);
+        shouldFail(() -> challengeApi.create(challengeCreateDto));
+    }
+
+    @Test
+    public void invalidActionsDeniedTest() {
+
+    }
+
+    @Test
+    public void deleteTest() {
+
+    }
+
+    @Test
+    public void ownerOfChallengeNotAbleToDeleteTest() {
+
+    }
+
+    @Test
+    public void onlyChallengedCanDeclineOrAcceptTest() {
+
+    }
 }
 

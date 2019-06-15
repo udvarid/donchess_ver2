@@ -121,7 +121,7 @@ public class ChallengeService {
             }
         } else {
             if (challenge.getChallenger().equals(answerGiver)) {
-                throw new InvalidException("The creator of challenge can't decline or accept it!");
+                throw new InvalidException("Only the challenger can decline or accept it!");
             }
             if (challengeActionDto.getChallengeAction().equals(ChallengeAction.DECLINE.name()) &&
                     !answerGiver.equals(challenge.getChallenged())) {

@@ -23,7 +23,6 @@ import javax.transaction.Transactional;
 import static org.junit.Assert.*;
 
 @RunWith(SpringRunner.class)
-//@SpringBootTest(classes = TestApplication.class, webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Transactional
 @ActiveProfiles({"test", "cleandb"})

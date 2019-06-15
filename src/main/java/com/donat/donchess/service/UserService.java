@@ -110,6 +110,7 @@ public class UserService implements UserDetailsService {
         QUser userFromQ = QUser.user;
 
         List<User> users = query.selectFrom(userFromQ)
+                .where(userFromQ.enabled.eq(true))
                 .orderBy(userFromQ.fullname.asc())
                 .fetch();
 

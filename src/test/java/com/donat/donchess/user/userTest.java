@@ -1,13 +1,18 @@
 package com.donat.donchess.user;
 
 import com.donat.donchess.AbstractApiTest;
+import com.donat.donchess.domain.QUser;
 import com.donat.donchess.domain.User;
 import com.donat.donchess.dto.RegisterDto;
 import com.donat.donchess.dto.UserDto;
-import com.donat.donchess.repository.UserRepository;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.annotation.Commit;
+import org.springframework.test.annotation.Rollback;
 
+import javax.inject.Provider;
+import javax.persistence.EntityManager;
 import java.util.List;
 
 import static org.junit.Assert.*;
@@ -15,13 +20,19 @@ import static org.junit.Assert.*;
 public class userTest extends AbstractApiTest {
 
     public static final String MAIL_FOR_REGISTRATION = "donat.udvari@ponte.hu";
+
     @Autowired
-    UserRepository userRepository;
+    private Provider<EntityManager> entityManager;
 
     @Test
     public void createUserTest() {
+        JPAQueryFactory query = new JPAQueryFactory(entityManager);
+        QUser userFromQ = QUser.user;
         List<UserDto> userDtos = userApi.getAll();
-        List<User> users = userRepository.findAll();
+        List<User> users = query
+                .selectFrom(userFromQ)
+                .where(userFromQ.enabled.eq(true))
+                .fetch();
 
         assertEquals(userDtos.size(), users.size());
         users.forEach(user -> {
@@ -33,32 +44,45 @@ public class userTest extends AbstractApiTest {
 
     @Test
     public void registerUserWithConfirmationTest() {
+        JPAQueryFactory query = new JPAQueryFactory(entityManager);
+        QUser userFromQ = QUser.user;
+
         RegisterDto registerDto = new RegisterDto();
-        registerDto.setEmail("donat.udvari@ponte.hu");
-        registerDto.setFullName(MAIL_FOR_REGISTRATION);
+        registerDto.setEmail(MAIL_FOR_REGISTRATION);
+        registerDto.setFullName("Udvari Donát - test");
         registerDto.setPassword("1234");
 
         userApi.register(registerDto);
 
-        User unconfirmedUser = userRepository.findByEmail(registerDto.getEmail());
+        //we can found in the database
+        User unconfirmedUser = query.selectFrom(userFromQ)
+                .where(userFromQ.email.eq(MAIL_FOR_REGISTRATION))
+                .fetchOne();
         assertNotNull(unconfirmedUser);
-        assertEquals(registerDto.getFullName(), unconfirmedUser.getFullname());
-        assertFalse(unconfirmedUser.isEnabled());
-        assertFalse(unconfirmedUser.getAuthenticationToken().isEmpty());
+
+        //the API doesn't give this user as this isn't confirmed yet
+        List<UserDto> confirmedUsersFromApiBeforeConfirmation = userApi.getAll();
+        assertFalse(confirmedUsersFromApiBeforeConfirmation
+                .stream()
+                .anyMatch(user -> user.getFullName().equals(registerDto.getFullName())));
+
 
         userApi.confirmRegistration(unconfirmedUser.getAuthenticationToken());
 
+        //the API gives this user as this isn confirmed at this moment
+        List<UserDto> confirmedUsersFromApiAfterConfirmation = userApi.getAll();
+        assertTrue(confirmedUsersFromApiAfterConfirmation
+                .stream()
+                .anyMatch(user -> user.getFullName().equals(registerDto.getFullName())));
+
+
+
 
     }
 
-    @Test
-    public void confirmUserRegistration() {
-        User confirmedUser = userRepository.findByEmail(MAIL_FOR_REGISTRATION);
-        assertNotNull(confirmedUser);
-        assertTrue(confirmedUser.getAuthenticationToken() == null);
-        assertTrue(confirmedUser.isEnabled());
 
-    }
+
+
 
 
 
