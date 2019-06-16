@@ -277,5 +277,47 @@ public class challengeTest extends AbstractApiTest {
 
         //TODO test of new game creation
     }
+
+    @Test
+    public void createMoreChallengeTest() {
+
+        JPAQueryFactory query = new JPAQueryFactory(entityManager);
+        QChallenge challengeFromQ = QChallenge.challenge;
+        loginAsDonat1();
+        ChallengeCreateDto challengeCreateDto = new ChallengeCreateDto();
+        challengeCreateDto.setChallengedId(2l);
+        challengeApi.create(challengeCreateDto);
+
+        Challenge challengeOne = query
+                .selectFrom(challengeFromQ)
+                .where(challengeFromQ.challenger.id.eq(1l)
+                        .and(challengeFromQ.challenged.id.eq(2l)))
+                .fetchOne();
+
+        assertNotNull(challengeOne);
+
+        ChallengeActionDto challengeActionDto = new ChallengeActionDto();
+        challengeActionDto.setChallengeId(challengeOne.getId());
+        challengeActionDto.setChallengeAction("DELETE");
+
+        ChallengeCreateDto challengeCreateDto2 = new ChallengeCreateDto();
+        challengeApi.create(challengeCreateDto2);
+
+        Challenge challengeTwo = query
+                .selectFrom(challengeFromQ)
+                .where(challengeFromQ.challenger.id.eq(1l)
+                        .and(challengeFromQ.challenged.id.isNull()))
+                .fetchOne();
+
+        assertNotNull(challengeTwo);
+
+        ChallengeActionDto challengeActionDto2 = new ChallengeActionDto();
+        challengeActionDto2.setChallengeId(challengeTwo.getId());
+        challengeActionDto2.setChallengeAction("DELETE");
+
+        challengeApi.answer(challengeActionDto);
+        challengeApi.answer(challengeActionDto2);
+
+    }
 }
 

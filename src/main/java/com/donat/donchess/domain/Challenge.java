@@ -12,11 +12,11 @@ public class Challenge {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
+    @ManyToOne
     @NotNull
     private User challenger;
 
-    @OneToOne
+    @ManyToOne
     private User challenged;
 
     private LocalDateTime creatonTime;
