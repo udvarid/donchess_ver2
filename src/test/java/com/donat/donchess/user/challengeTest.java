@@ -6,7 +6,6 @@ import com.donat.donchess.domain.QChallenge;
 import com.donat.donchess.dto.challange.ChallengeActionDto;
 import com.donat.donchess.dto.challange.ChallengeCreateDto;
 import com.donat.donchess.dto.challange.ChallengeDto;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -131,22 +130,152 @@ public class challengeTest extends AbstractApiTest {
 
     @Test
     public void invalidActionsDeniedTest() {
+        JPAQueryFactory query = new JPAQueryFactory(entityManager);
+        QChallenge challengeFromQ = QChallenge.challenge;
+        loginAsDonat1();
+        ChallengeCreateDto challengeCreateDto = new ChallengeCreateDto();
+        challengeCreateDto.setChallengedId(2l);
+        challengeApi.create(challengeCreateDto);
+
+        Challenge challenge = query
+                .selectFrom(challengeFromQ)
+                .where(challengeFromQ.challenger.id.eq(1l)
+                        .and(challengeFromQ.challenged.id.eq(2l)))
+                .fetchOne();
+
+        ChallengeActionDto challengeActionDto = new ChallengeActionDto();
+        challengeActionDto.setChallengeId(challenge.getId());
+
+        challengeActionDto.setChallengeAction("maki");
+        shouldFail(() -> challengeApi.answer(challengeActionDto));
+
+        challengeActionDto.setChallengeAction("delete");
+        shouldFail(() -> challengeApi.answer(challengeActionDto));
+
+        challengeActionDto.setChallengeAction("DELETE");
+        challengeApi.answer(challengeActionDto);
 
     }
 
     @Test
-    public void deleteTest() {
+    public void onlyTheOnwerOfChallengeCanDeleteTest() {
+        JPAQueryFactory query = new JPAQueryFactory(entityManager);
+        QChallenge challengeFromQ = QChallenge.challenge;
+        loginAsDonat1();
+        ChallengeCreateDto challengeCreateDto = new ChallengeCreateDto();
+        challengeCreateDto.setChallengedId(2l);
+        challengeApi.create(challengeCreateDto);
+
+        Challenge challenge = query
+                .selectFrom(challengeFromQ)
+                .where(challengeFromQ.challenger.id.eq(1l)
+                        .and(challengeFromQ.challenged.id.eq(2l)))
+                .fetchOne();
+
+        ChallengeActionDto challengeActionDto = new ChallengeActionDto();
+        challengeActionDto.setChallengeId(challenge.getId());
+        challengeActionDto.setChallengeAction("DELETE");
+
+        loginAsDonat2();
+        shouldFail(() -> challengeApi.answer(challengeActionDto));
+
+        loginAsDonat1();
+        challengeApi.answer(challengeActionDto);
+    }
+
+    @Test
+    public void ownerOfChallengeCanOnlyDeleteTest() {
+        JPAQueryFactory query = new JPAQueryFactory(entityManager);
+        QChallenge challengeFromQ = QChallenge.challenge;
+        loginAsDonat1();
+        ChallengeCreateDto challengeCreateDto = new ChallengeCreateDto();
+        challengeCreateDto.setChallengedId(2l);
+        challengeApi.create(challengeCreateDto);
+
+        Challenge challenge = query
+                .selectFrom(challengeFromQ)
+                .where(challengeFromQ.challenger.id.eq(1l)
+                        .and(challengeFromQ.challenged.id.eq(2l)))
+                .fetchOne();
+
+        ChallengeActionDto challengeActionDto = new ChallengeActionDto();
+        challengeActionDto.setChallengeId(challenge.getId());
+
+        challengeActionDto.setChallengeAction("ACCEPT");
+        shouldFail(()-> challengeApi.answer(challengeActionDto));
+
+        challengeActionDto.setChallengeAction("DECLINE");
+        shouldFail(()-> challengeApi.answer(challengeActionDto));
+
+        challengeActionDto.setChallengeAction("DELETE");
+        challengeApi.answer(challengeActionDto);
+    }
+
+    @Test
+    public void onlyChallengedCanDeclineTest() {
+        JPAQueryFactory query = new JPAQueryFactory(entityManager);
+        QChallenge challengeFromQ = QChallenge.challenge;
+        loginAsDonat1();
+        ChallengeCreateDto challengeCreateDto = new ChallengeCreateDto();
+        challengeCreateDto.setChallengedId(2l);
+        challengeApi.create(challengeCreateDto);
+
+        Challenge challenge = query
+                .selectFrom(challengeFromQ)
+                .where(challengeFromQ.challenger.id.eq(1l)
+                        .and(challengeFromQ.challenged.id.eq(2l)))
+                .fetchOne();
+
+        assertNotNull(challenge);
+
+        ChallengeActionDto challengeActionDto = new ChallengeActionDto();
+        challengeActionDto.setChallengeId(challenge.getId());
+        challengeActionDto.setChallengeAction("DECLINE");
+
+        loginAsDonat2();
+        challengeApi.answer(challengeActionDto);
+        Challenge challengeAfterDecline = query
+                .selectFrom(challengeFromQ)
+                .where(challengeFromQ.challenger.id.eq(1l)
+                        .and(challengeFromQ.challenged.id.eq(2l)))
+                .fetchOne();
+
+        assertNull(challengeAfterDecline);
 
     }
 
     @Test
-    public void ownerOfChallengeNotAbleToDeleteTest() {
+    public void onlyChallengedCanAcceptTest() {
+        JPAQueryFactory query = new JPAQueryFactory(entityManager);
+        QChallenge challengeFromQ = QChallenge.challenge;
+        loginAsDonat1();
+        ChallengeCreateDto challengeCreateDto = new ChallengeCreateDto();
+        challengeCreateDto.setChallengedId(2l);
+        challengeApi.create(challengeCreateDto);
 
-    }
+        Challenge challenge = query
+                .selectFrom(challengeFromQ)
+                .where(challengeFromQ.challenger.id.eq(1l)
+                        .and(challengeFromQ.challenged.id.eq(2l)))
+                .fetchOne();
 
-    @Test
-    public void onlyChallengedCanDeclineOrAcceptTest() {
+        assertNotNull(challenge);
 
+        ChallengeActionDto challengeActionDto = new ChallengeActionDto();
+        challengeActionDto.setChallengeId(challenge.getId());
+        challengeActionDto.setChallengeAction("ACCEPT");
+
+        loginAsDonat2();
+        challengeApi.answer(challengeActionDto);
+        Challenge challengeAfterDecline = query
+                .selectFrom(challengeFromQ)
+                .where(challengeFromQ.challenger.id.eq(1l)
+                        .and(challengeFromQ.challenged.id.eq(2l)))
+                .fetchOne();
+
+        assertNull(challengeAfterDecline);
+
+        //TODO test of new game creation
     }
 }
 

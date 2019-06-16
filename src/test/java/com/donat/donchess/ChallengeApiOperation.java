@@ -1,6 +1,5 @@
 package com.donat.donchess;
 
-import com.donat.donchess.dto.UserDto;
 import com.donat.donchess.dto.challange.ChallengeActionDto;
 import com.donat.donchess.dto.challange.ChallengeCreateDto;
 import com.donat.donchess.dto.challange.ChallengeDto;

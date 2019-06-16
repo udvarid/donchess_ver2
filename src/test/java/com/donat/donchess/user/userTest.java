@@ -8,8 +8,6 @@ import com.donat.donchess.dto.UserDto;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.annotation.Commit;
-import org.springframework.test.annotation.Rollback;
 
 import javax.inject.Provider;
 import javax.persistence.EntityManager;
