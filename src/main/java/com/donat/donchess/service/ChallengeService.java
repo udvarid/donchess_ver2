@@ -1,15 +1,21 @@
 package com.donat.donchess.service;
 
 import com.donat.donchess.domain.Challenge;
+import com.donat.donchess.domain.ChessGame;
 import com.donat.donchess.domain.QChallenge;
 import com.donat.donchess.domain.User;
+import com.donat.donchess.domain.enums.ChessGameStatus;
+import com.donat.donchess.domain.enums.ChessGameType;
+import com.donat.donchess.domain.enums.Result;
 import com.donat.donchess.dto.challange.ChallengeAction;
 import com.donat.donchess.dto.challange.ChallengeActionDto;
 import com.donat.donchess.dto.challange.ChallengeCreateDto;
 import com.donat.donchess.dto.challange.ChallengeDto;
 import com.donat.donchess.exceptions.InvalidException;
 import com.donat.donchess.exceptions.NotFoundException;
+import com.donat.donchess.model.enums.Color;
 import com.donat.donchess.repository.ChallengeRepository;
+import com.donat.donchess.repository.ChessGameRepository;
 import com.donat.donchess.repository.UserRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.apache.commons.lang3.EnumUtils;
@@ -31,15 +37,17 @@ public class ChallengeService {
     private ChallengeRepository challengeRepository;
     private UserRepository userRepository;
     private SecurityService securityService;
+    private ChessGameRepository chessGameRepository;
 
     @Autowired
     private Provider<EntityManager> entityManager;
 
     public ChallengeService(ChallengeRepository challengeRepository, UserRepository userRepository,
-                            SecurityService securityService) {
+                            SecurityService securityService, ChessGameRepository chessGameRepository) {
         this.challengeRepository = challengeRepository;
         this.userRepository = userRepository;
         this.securityService = securityService;
+        this.chessGameRepository = chessGameRepository;
     }
 
     public Set<ChallengeDto> findAll() {
@@ -130,11 +138,30 @@ public class ChallengeService {
             if (challengeActionDto.getChallengeAction().equals(ChallengeAction.ACCEPT.name())) {
                 challenge.setChallenged(answerGiver);
                 //TODO új játék létrehozása
+                createNewGame(challenge.getChallenger(), challenge.getChallenged());
                 System.out.println("New game has been created!");
             }
         }
         challengeRepository.delete(challenge);
 
+    }
+
+    private void createNewGame(User challenger, User challenged) {
+        ChessGame chessGame = new ChessGame();
+        chessGame.setChessGameStatus(ChessGameStatus.OPEN);
+        chessGame.setChessGameType(ChessGameType.NORMAL);
+        chessGame.setLastMoveId(0);
+        chessGame.setResult(Result.OPEN);
+        chessGame.setNextMove(Color.WHITE);
+        if (Math.random() < 0.5) {
+            chessGame.setUserOne(challenger);
+            chessGame.setUserTwo(challenged);
+        } else {
+            chessGame.setUserOne(challenged);
+            chessGame.setUserTwo(challenger);
+        }
+
+        chessGameRepository.save(chessGame);
     }
 
     private boolean validActions(ChallengeActionDto challengeActionDto) {

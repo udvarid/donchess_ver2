@@ -1,8 +1,7 @@
 package com.donat.donchess.user;
 
 import com.donat.donchess.AbstractApiTest;
-import com.donat.donchess.domain.Challenge;
-import com.donat.donchess.domain.QChallenge;
+import com.donat.donchess.domain.*;
 import com.donat.donchess.dto.challange.ChallengeActionDto;
 import com.donat.donchess.dto.challange.ChallengeCreateDto;
 import com.donat.donchess.dto.challange.ChallengeDto;
@@ -13,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import javax.inject.Provider;
 import javax.persistence.EntityManager;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -202,10 +202,10 @@ public class challengeTest extends AbstractApiTest {
         challengeActionDto.setChallengeId(challenge.getId());
 
         challengeActionDto.setChallengeAction("ACCEPT");
-        shouldFail(()-> challengeApi.answer(challengeActionDto));
+        shouldFail(() -> challengeApi.answer(challengeActionDto));
 
         challengeActionDto.setChallengeAction("DECLINE");
-        shouldFail(()-> challengeApi.answer(challengeActionDto));
+        shouldFail(() -> challengeApi.answer(challengeActionDto));
 
         challengeActionDto.setChallengeAction("DELETE");
         challengeApi.answer(challengeActionDto);
@@ -248,6 +248,7 @@ public class challengeTest extends AbstractApiTest {
     public void onlyChallengedCanAcceptTest() {
         JPAQueryFactory query = new JPAQueryFactory(entityManager);
         QChallenge challengeFromQ = QChallenge.challenge;
+
         loginAsDonat1();
         ChallengeCreateDto challengeCreateDto = new ChallengeCreateDto();
         challengeCreateDto.setChallengedId(2l);
@@ -265,6 +266,9 @@ public class challengeTest extends AbstractApiTest {
         challengeActionDto.setChallengeId(challenge.getId());
         challengeActionDto.setChallengeAction("ACCEPT");
 
+        int numberOfGamesBeforeAccept =
+                countGamesBetweenPlayers(challenge.getChallenger(), challenge.getChallenged());
+
         loginAsDonat2();
         challengeApi.answer(challengeActionDto);
         Challenge challengeAfterDecline = query
@@ -275,14 +279,21 @@ public class challengeTest extends AbstractApiTest {
 
         assertNull(challengeAfterDecline);
 
-        //TODO test of new game creation
+        int numberOfGamesAfterAccept =
+                countGamesBetweenPlayers(challenge.getChallenger(), challenge.getChallenged());
+
+        assertTrue(numberOfGamesBeforeAccept + 1 == numberOfGamesAfterAccept);
+
+
     }
+
 
     @Test
     public void createMoreChallengeTest() {
 
         JPAQueryFactory query = new JPAQueryFactory(entityManager);
         QChallenge challengeFromQ = QChallenge.challenge;
+
         loginAsDonat1();
         ChallengeCreateDto challengeCreateDto = new ChallengeCreateDto();
         challengeCreateDto.setChallengedId(2l);
@@ -319,5 +330,26 @@ public class challengeTest extends AbstractApiTest {
         challengeApi.answer(challengeActionDto2);
 
     }
+
+    private int countGamesBetweenPlayers(User challenger, User challenged) {
+        JPAQueryFactory query = new JPAQueryFactory(entityManager);
+        QChessGame chessGameFromQ = QChessGame.chessGame;
+
+        List<ChessGame> chessGames = query
+                .selectFrom(chessGameFromQ)
+                .fetch();
+
+        List<ChessGame> filteredChessgames = chessGames
+                .stream()
+                .filter(game ->
+                        game.getUserOne().getId().equals(challenger.getId()) &&
+                                game.getUserTwo().getId().equals(challenged.getId()) ||
+                                game.getUserOne().getId().equals(challenged.getId()) &&
+                                        game.getUserTwo().getId().equals(challenger.getId())
+                ).collect(Collectors.toList());
+
+        return filteredChessgames.size();
+    }
+
 }
 

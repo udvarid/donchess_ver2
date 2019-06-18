@@ -2,11 +2,12 @@ package com.donat.donchess.domain;
 
 import com.donat.donchess.domain.enums.ChessGameStatus;
 import com.donat.donchess.domain.enums.ChessGameType;
-import com.donat.donchess.domain.enums.NextMove;
 import com.donat.donchess.domain.enums.Result;
+import com.donat.donchess.model.enums.Color;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -32,15 +33,15 @@ public class ChessGame {
     private ChessGameStatus chessGameStatus;
 
     @Enumerated(EnumType.STRING)
-    private NextMove nextMove;
+    private Color nextMove;
 
     @Enumerated(EnumType.STRING)
     private Result result;
 
-    private Long lastMoveId;
+    private int lastMoveId;
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    private List<ChessMove> chessMoves;
+    private List<ChessMove> chessMoves = new ArrayList<>();
 
     //TODO később bevezetni az időperiódust és számon tartani, az egyes felhasználók rendelkezésre álló idejét
 
@@ -85,14 +86,6 @@ public class ChessGame {
         this.chessGameStatus = chessGameStatus;
     }
 
-    public NextMove getNextMove() {
-        return nextMove;
-    }
-
-    public void setNextMove(NextMove nextMove) {
-        this.nextMove = nextMove;
-    }
-
     public Result getResult() {
         return result;
     }
@@ -101,11 +94,11 @@ public class ChessGame {
         this.result = result;
     }
 
-    public Long getLastMoveId() {
+    public int getLastMoveId() {
         return lastMoveId;
     }
 
-    public void setLastMoveId(Long lastMoveId) {
+    public void setLastMoveId(int lastMoveId) {
         this.lastMoveId = lastMoveId;
     }
 
@@ -115,5 +108,13 @@ public class ChessGame {
 
     public void setChessMoves(List<ChessMove> chessMoves) {
         this.chessMoves = chessMoves;
+    }
+
+    public Color getNextMove() {
+        return nextMove;
+    }
+
+    public void setNextMove(Color nextMove) {
+        this.nextMove = nextMove;
     }
 }

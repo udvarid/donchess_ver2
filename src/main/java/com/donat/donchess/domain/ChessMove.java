@@ -1,5 +1,8 @@
 package com.donat.donchess.domain;
 
+import com.donat.donchess.domain.enums.SpecialMoveType;
+import com.donat.donchess.model.enums.ChessFigure;
+
 import javax.persistence.*;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
@@ -29,6 +32,28 @@ public class ChessMove {
     @Min(value = 1)
     @Max(value = 8)
     private Integer moveToY;
+
+    @Enumerated(EnumType.STRING)
+    private SpecialMoveType specialMoveType;
+
+    @Enumerated(EnumType.STRING)
+    private ChessFigure promoteType;
+
+    public ChessFigure getPromoteType() {
+        return promoteType;
+    }
+
+    public void setPromoteType(ChessFigure promoteType) {
+        this.promoteType = promoteType;
+    }
+
+    public SpecialMoveType getSpecialMoveType() {
+        return specialMoveType;
+    }
+
+    public void setSpecialMoveType(SpecialMoveType specialMoveType) {
+        this.specialMoveType = specialMoveType;
+    }
 
     public Long getId() {
         return id;
