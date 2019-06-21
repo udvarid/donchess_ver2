@@ -1,4 +1,4 @@
-package com.donat.donchess.model;
+package com.donat.donchess.model.objects;
 
 import com.donat.donchess.model.enums.ChessFigure;
 import com.donat.donchess.model.enums.Color;

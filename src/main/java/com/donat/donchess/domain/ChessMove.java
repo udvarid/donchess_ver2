@@ -15,7 +15,7 @@ public class ChessMove {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long moveId;
+    private int moveId;
 
     @Min(value = 1)
     @Max(value = 8)
@@ -63,11 +63,11 @@ public class ChessMove {
         this.id = id;
     }
 
-    public Long getMoveId() {
+    public int getMoveId() {
         return moveId;
     }
 
-    public void setMoveId(Long moveId) {
+    public void setMoveId(int moveId) {
         this.moveId = moveId;
     }
 

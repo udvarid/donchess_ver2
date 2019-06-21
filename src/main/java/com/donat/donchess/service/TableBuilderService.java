@@ -6,9 +6,8 @@ import com.donat.donchess.domain.QChessGame;
 import com.donat.donchess.domain.QChessMove;
 import com.donat.donchess.domain.enums.ChessGameType;
 import com.donat.donchess.domain.enums.SpecialMoveType;
-import com.donat.donchess.exceptions.NotFoundException;
-import com.donat.donchess.model.ChessTable;
-import com.donat.donchess.model.Figure;
+import com.donat.donchess.model.objects.ChessTable;
+import com.donat.donchess.model.objects.Figure;
 import com.donat.donchess.model.enums.ChessFigure;
 import com.donat.donchess.model.enums.Color;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -62,10 +61,24 @@ public class TableBuilderService {
     public void makeMove(ChessTable chessTable, ChessMove chessMove) {
         //simple move
         Figure figureToMove = findFigure(chessTable.getFigures(), chessMove.getMoveFromX(), chessMove.getMoveFromY());
-        Figure figureToKill = findFigure(chessTable.getFigures(), chessMove.getMoveToX(), chessMove.getMoveToX());
+        Figure figureToKill = findFigure(chessTable.getFigures(), chessMove.getMoveToX(), chessMove.getMoveToY());
         figureToMove.setCoordX(chessMove.getMoveToX());
         figureToMove.setCoordY(chessMove.getMoveToY());
-        chessTable.getFigures().remove(figureToKill);
+        figureToMove.setMoved(true);
+        chessTable.setLastMoveWasDoublePawn(false);
+        if (figureToMove.getFigureType().equals(ChessFigure.PAWN)) {
+            chessTable.setLastPawnMoveNumber(chessMove.getMoveId());
+            if (Math.abs(chessMove.getMoveToY() - chessMove.getMoveFromY()) > 1) {
+                chessTable.setLastMoveWasDoublePawn(true);
+                chessTable.setColumnIndexIfLastMoveWasDoublePawn(chessMove.getMoveToY());
+            }
+        }
+        if (figureToKill != null) {
+            chessTable.getFigures().remove(figureToKill);
+            chessTable.setLastHitMoveNumber(chessMove.getMoveId());
+        }
+
+
 
         //en-passan
         if (chessMove.getSpecialMoveType().equals(SpecialMoveType.EN_PASSAN)) {
@@ -97,7 +110,7 @@ public class TableBuilderService {
                 .stream()
                 .filter(figure -> figure.getCoordX() == coordX &&
                         figure.getCoordY() == coordY)
-                .findAny().orElseThrow(()-> new NotFoundException("Figure can't be found on the set"));
+                .findAny().orElse(null);
     }
 
     public void initChessTable(ChessTable chessTable, ChessGame chessGame) {
