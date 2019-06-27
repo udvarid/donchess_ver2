@@ -1,17 +1,28 @@
 package com.donat.donchess.dto;
 
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+
 public class ChessMoveDto {
 
     private Long gameId;
 
-    private Long moveId;
+    private int moveId;
 
+    @Min(1)
+    @Max(8)
     private int moveFromX;
 
+    @Min(1)
+    @Max(8)
     private int moveFromY;
 
+    @Min(1)
+    @Max(8)
     private int moveToX;
 
+    @Min(1)
+    @Max(8)
     private int moveToY;
 
     private String specialMoveType;
@@ -26,11 +37,11 @@ public class ChessMoveDto {
         this.gameId = gameId;
     }
 
-    public Long getMoveId() {
+    public int getMoveId() {
         return moveId;
     }
 
-    public void setMoveId(Long moveId) {
+    public void setMoveId(int moveId) {
         this.moveId = moveId;
     }
 
