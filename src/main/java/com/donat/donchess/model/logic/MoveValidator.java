@@ -1,10 +1,13 @@
 package com.donat.donchess.model.logic;
 
+import com.donat.donchess.domain.enums.SpecialMoveType;
+import com.donat.donchess.exceptions.NotFoundException;
 import com.donat.donchess.model.enums.ChessFigure;
 import com.donat.donchess.model.enums.Color;
 import com.donat.donchess.model.objects.ChessTable;
 import com.donat.donchess.model.objects.Coordinate;
 import com.donat.donchess.model.objects.Figure;
+import com.donat.donchess.model.objects.ValidMove;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -16,9 +19,12 @@ import java.util.Set;
 public class MoveValidator {
 
 
-    public Set<Coordinate> validateMove(ChessTable chessTable, Coordinate coordinateOfFigure) {
+    public Set<ValidMove> validateMove(ChessTable chessTable, Coordinate coordinateOfFigure) {
         Figure figureToMove = findFigure(chessTable.getFigures(), coordinateOfFigure);
-        Set<Coordinate> validMoves = new HashSet<>();
+        if (figureToMove == null) {
+            throw new NotFoundException("The figure can not be found");
+        }
+        Set<ValidMove> validMoves = new HashSet<>();
 
         if (figureToMove.getFigureType().equals(ChessFigure.PAWN)) {
             fillValidMovesForPawn(validMoves, figureToMove, chessTable);
@@ -38,56 +44,154 @@ public class MoveValidator {
         return validMoves;
     }
 
-    private void fillValidMovesForKing(Set<Coordinate> validMoves, Figure figureToMove, ChessTable chessTable) {
+    private void fillValidMovesForKing(Set<ValidMove> validMoves, Figure figureToMove, ChessTable chessTable) {
         for (int i = -1; i <= +1; i++) {
             for (int j = -1; j <= +1; j++) {
                 if (i != 0 || j != 0) {
                     Coordinate coordinate =
                             new Coordinate(figureToMove.getCoordX() + i, figureToMove.getCoordY() + j);
-                    Figure figureToCheck = findFigure(chessTable.getFigures(), coordinate);
-                    validGoalAndAdd(validMoves, coordinate, figureToMove, figureToCheck);
+                    validGoalAndAdd(validMoves, coordinate, figureToMove, chessTable.getFigures());
                 }
             }
         }
 
-        //TODO - checking the castling case
+        if (!figureToMove.isMoved()) {
+            validateCastlingToRight(validMoves, figureToMove, chessTable);
+            validateCastlingToLeft(validMoves, figureToMove, chessTable);
+        }
+
     }
 
-    private void fillValidMovesForKnight(Set<Coordinate> validMoves, Figure figureToMove, ChessTable chessTable) {
-        //TODO - move into 8 different cells separatly, checking the validation (end of table, own figure)C
-        Coordinate knightMove1 = new Coordinate(figureToMove.getCoordX() + 1, figureToMove.getCoordY() + 2);
-        Coordinate knightMove2 = new Coordinate(figureToMove.getCoordX() + 2, figureToMove.getCoordY() + 1);
-        Coordinate knightMove3 = new Coordinate(figureToMove.getCoordX() - 1, figureToMove.getCoordY() - 2);
-        Coordinate knightMove4 = new Coordinate(figureToMove.getCoordX() - 2, figureToMove.getCoordY() - 1);
-        Coordinate knightMove5 = new Coordinate(figureToMove.getCoordX() + 1, figureToMove.getCoordY() - 2);
-        Coordinate knightMove6 = new Coordinate(figureToMove.getCoordX() + 2, figureToMove.getCoordY() - 1);
-        Coordinate knightMove7 = new Coordinate(figureToMove.getCoordX() - 1, figureToMove.getCoordY() + 2);
-        Coordinate knightMove8 = new Coordinate(figureToMove.getCoordX() - 2, figureToMove.getCoordY() + 1);
-        Figure goalFigure1 = findFigure(chessTable.getFigures(), knightMove1);
+    private void validateCastlingToRight(Set<ValidMove> validMoves, Figure figureToMove, ChessTable chessTable) {
+        Figure rookToRight = findFigure(chessTable.getFigures(),
+                new Coordinate(8, figureToMove.getCoordY()));
+        if (rookToRight != null && !rookToRight.isMoved()) {
+            Figure cellIsEmpty1 = findFigure(chessTable.getFigures(),
+                    new Coordinate(6, figureToMove.getCoordY()));
+            Figure cellIsEmpty2 = findFigure(chessTable.getFigures(),
+                    new Coordinate(7, figureToMove.getCoordY()));
+            if (cellIsEmpty1 == null && cellIsEmpty2 == null) {
+                validMoves.add(new ValidMove(new Coordinate(7, figureToMove.getCoordY()),
+                        SpecialMoveType.CASTLING));
+            }
+        }
     }
 
-    private void fillValidMovesForBishop(Set<Coordinate> validMoves, Figure figureToMove, ChessTable chessTable) {
-        //TODO - move into 4 different direction separatly.
-        //TODO - in case of block (e.g.: end of table, own figure), break the loop
+    private void validateCastlingToLeft(Set<ValidMove> validMoves, Figure figureToMove, ChessTable chessTable) {
+        Figure rookToLeft = findFigure(chessTable.getFigures(),
+                new Coordinate(1, figureToMove.getCoordY()));
+        if (rookToLeft != null && !rookToLeft.isMoved()) {
+            Figure cellIsEmpty1 = findFigure(chessTable.getFigures(),
+                    new Coordinate(2, figureToMove.getCoordY()));
+            Figure cellIsEmpty2 = findFigure(chessTable.getFigures(),
+                    new Coordinate(3, figureToMove.getCoordY()));
+            Figure cellIsEmpty3 = findFigure(chessTable.getFigures(),
+                    new Coordinate(4, figureToMove.getCoordY()));
+            if (cellIsEmpty1 == null && cellIsEmpty2 == null && cellIsEmpty3 == null) {
+                validMoves.add(new ValidMove(new Coordinate(3, figureToMove.getCoordY()),
+                        SpecialMoveType.CASTLING));
+            }
+        }
     }
 
-    private void fillValidMovesForRook(Set<Coordinate> validMoves, Figure figureToMove, ChessTable chessTable) {
-        //TODO - move into 4 different direction separatly.
-        //TODO - in case of block (e.g.: end of table, own figure), break the loop
+
+    private void fillValidMovesForKnight(Set<ValidMove> validMoves, Figure figureToMove, ChessTable chessTable) {
+
+        int jump = 1;
+        int mirrorLeft = 1;
+        int mirrorRight = 1;
+        for (int i = 1; i <= 8; i++) {
+            Coordinate knightMove = new Coordinate(figureToMove.getCoordX() + jump * mirrorLeft,
+                    figureToMove.getCoordY() + (3 - jump) * mirrorRight);
+            validGoalAndAdd(validMoves, knightMove, figureToMove, chessTable.getFigures());
+
+            if (jump == 2) {
+                jump = 1;
+                mirrorLeft *= -1;
+                if (i != 5) {
+                    mirrorRight *= -1;
+                }
+            } else {
+                jump = 2;
+            }
+        }
     }
 
-    private void fillValidMovesForPawn(Set<Coordinate> validMoves, Figure figureToMove, ChessTable chessTable) {
+    private void fillValidMovesForBishop(Set<ValidMove> validMoves, Figure figureToMove, ChessTable chessTable) {
+        //fel-bal
+        for (int i = 1; i <= 7; i++) {
+            Coordinate move = new Coordinate(figureToMove.getCoordX() - i, figureToMove.getCoordY() + i);
+            if (!validGoalAndAdd(validMoves, move, figureToMove, chessTable.getFigures())) {
+                break;
+            }
+        }
+        //fel-jobb
+        for (int i = 1; i <= 7; i++) {
+            Coordinate move = new Coordinate(figureToMove.getCoordX() + i, figureToMove.getCoordY() + i);
+            if (!validGoalAndAdd(validMoves, move, figureToMove, chessTable.getFigures())) {
+                break;
+            }
+        }
+        //le-bal
+        for (int i = 1; i <= 7; i++) {
+            Coordinate move = new Coordinate(figureToMove.getCoordX() - i, figureToMove.getCoordY() - i);
+            if (!validGoalAndAdd(validMoves, move, figureToMove, chessTable.getFigures())) {
+                break;
+            }
+        }
+        //le-jobb
+        for (int i = 1; i <= 7; i++) {
+            Coordinate move = new Coordinate(figureToMove.getCoordX() + i, figureToMove.getCoordY() - i);
+            if (!validGoalAndAdd(validMoves, move, figureToMove, chessTable.getFigures())) {
+                break;
+            }
+        }
+    }
+
+    private void fillValidMovesForRook(Set<ValidMove> validMoves, Figure figureToMove, ChessTable chessTable) {
+        //felfelé
+        for (int i = 1; i <= 7; i++) {
+            Coordinate move = new Coordinate(figureToMove.getCoordX(), figureToMove.getCoordY() + i);
+            if (!validGoalAndAdd(validMoves, move, figureToMove, chessTable.getFigures())) {
+                break;
+            }
+        }
+        //lefelé
+        for (int i = 1; i <= 7; i++) {
+            Coordinate move = new Coordinate(figureToMove.getCoordX(), figureToMove.getCoordY() - i);
+            if (!validGoalAndAdd(validMoves, move, figureToMove, chessTable.getFigures())) {
+                break;
+            }
+        }
+        //balra
+        for (int i = 1; i <= 7; i++) {
+            Coordinate move = new Coordinate(figureToMove.getCoordX() - i, figureToMove.getCoordY());
+            if (!validGoalAndAdd(validMoves, move, figureToMove, chessTable.getFigures())) {
+                break;
+            }
+        }
+        //jobbra
+        for (int i = 1; i <= 7; i++) {
+            Coordinate move = new Coordinate(figureToMove.getCoordX() + i, figureToMove.getCoordY());
+            if (!validGoalAndAdd(validMoves, move, figureToMove, chessTable.getFigures())) {
+                break;
+            }
+        }
+
+    }
+
+    private void fillValidMovesForPawn(Set<ValidMove> validMoves, Figure figureToMove, ChessTable chessTable) {
         int mirror = figureToMove.getColor().equals(Color.WHITE) ? 1 : -1;
         Figure figureToCheck = null;
 
         Coordinate oneStepfw = new Coordinate(figureToMove.getCoordX(), figureToMove.getCoordY() + 1 * mirror);
         figureToCheck = findFigure(chessTable.getFigures(), oneStepfw);
-        validGoalForPawnMovingAndAdd(validMoves, oneStepfw, figureToMove, figureToCheck);
+        validGoalForPawnMovingAndAdd(validMoves, oneStepfw, figureToCheck);
 
         Coordinate twoStepfw = new Coordinate(figureToMove.getCoordX(), figureToMove.getCoordY() + 2 * mirror);
         figureToCheck = findFigure(chessTable.getFigures(), twoStepfw);
         if (movingFromStartingPosition(figureToMove)) {
-            validGoalForPawnMovingAndAdd(validMoves, twoStepfw, figureToMove, figureToCheck);
+            validGoalForPawnMovingAndAdd(validMoves, twoStepfw, figureToCheck);
         }
 
         Coordinate attackLeft = new Coordinate(figureToMove.getCoordX() - 1, figureToMove.getCoordY() + 1 * mirror);
@@ -103,19 +207,20 @@ public class MoveValidator {
 
     }
 
-    private void pawnHitting(Set<Coordinate> validMoves, Figure figureToMove, ChessTable chessTable, Coordinate attackLeft, Coordinate attackLeftEnPassan) {
+    private void pawnHitting(Set<ValidMove> validMoves, Figure figureToMove, ChessTable chessTable, Coordinate attack, Coordinate attackEnPassan) {
         Figure figureToCheck;
         Figure enPassanFigureToCheck;
-        figureToCheck = findFigure(chessTable.getFigures(), attackLeft);
-        enPassanFigureToCheck = findFigure(chessTable.getFigures(), attackLeftEnPassan);
+        figureToCheck = findFigure(chessTable.getFigures(), attack);
+        enPassanFigureToCheck = findFigure(chessTable.getFigures(), attackEnPassan);
 
         if (figureToCheck != null) {
-            validGoalForPawnHittingAndAdd(validMoves, attackLeft, figureToMove, figureToCheck);
+            validGoalForPawnHittingAndAdd(validMoves, attack, figureToMove, figureToCheck);
         } else if (chessTable.isLastMoveWasDoublePawn() &&
                 enPassanFigureToCheck != null &&
                 enPassanFigureToCheck.getFigureType().equals(ChessFigure.PAWN) &&
-                chessTable.getColumnIndexIfLastMoveWasDoublePawn() == enPassanFigureToCheck.getCoordX()) {
-            validGoalForPawnMovingAndAdd(validMoves, attackLeft, figureToMove, null);
+                chessTable.getColumnIndexIfLastMoveWasDoublePawn() == enPassanFigureToCheck.getCoordX() &&
+                validCoordinate(attack)) {
+            validMoves.add(new ValidMove(attack, SpecialMoveType.EN_PASSAN));
         }
     }
 
@@ -124,26 +229,31 @@ public class MoveValidator {
                 figureToMove.getColor().equals(Color.BLACK) && figureToMove.getCoordY() == 7;
     }
 
-    private void validGoalForPawnMovingAndAdd(Set<Coordinate> validMoves, Coordinate aimCoord, Figure figureToMove, Figure figureToCheck) {
+    private void validGoalForPawnMovingAndAdd(Set<ValidMove> validMoves, Coordinate aimCoord, Figure figureToCheck) {
         if (validCoordinate(aimCoord) && figureToCheck == null) {
-            validMoves.add(aimCoord);
+            validMoves.add(new ValidMove(aimCoord, SpecialMoveType.NORMAL));
         }
     }
 
-    private void validGoalForPawnHittingAndAdd(Set<Coordinate> validMoves, Coordinate aimCoord, Figure figureToMove, Figure figureToCheck) {
+    private void validGoalForPawnHittingAndAdd(Set<ValidMove> validMoves, Coordinate aimCoord, Figure figureToMove, Figure figureToCheck) {
         if (validCoordinate(aimCoord) &&
                 figureToCheck != null &&
                 !figureToCheck.getColor().equals(figureToMove.getColor())) {
-            validMoves.add(aimCoord);
+            validMoves.add(new ValidMove(aimCoord, SpecialMoveType.NORMAL));
         }
     }
 
 
-    private boolean validGoalAndAdd(Set<Coordinate> validMoves, Coordinate aimCoord, Figure figureToMove, Figure figureToCheck) {
+    private boolean validGoalAndAdd(Set<ValidMove> validMoves, Coordinate aimCoord,
+                                    Figure figureToMove,
+                                    Set<Figure> figures) {
+        Figure figureToCheck = findFigure(figures, aimCoord);
         if (validCoordinate(aimCoord) &&
                 (figureToCheck == null || !figureToCheck.getColor().equals(figureToMove.getColor()))) {
-            validMoves.add(aimCoord);
-            return true;
+
+            validMoves.add(new ValidMove(aimCoord, SpecialMoveType.NORMAL));
+            //ha üthető egy ellenséges bábú, az utána lévő cellákra már nem léphet
+            return figureToCheck == null;
         }
         return false;
     }

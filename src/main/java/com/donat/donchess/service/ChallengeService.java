@@ -137,7 +137,6 @@ public class ChallengeService {
             }
             if (challengeActionDto.getChallengeAction().equals(ChallengeAction.ACCEPT.name())) {
                 challenge.setChallenged(answerGiver);
-                //TODO új játék létrehozása
                 createNewGame(challenge.getChallenger(), challenge.getChallenged());
                 System.out.println("New game has been created!");
             }

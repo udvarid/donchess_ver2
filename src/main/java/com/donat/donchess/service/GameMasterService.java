@@ -14,6 +14,7 @@ import com.donat.donchess.model.logic.DrawJudge;
 import com.donat.donchess.model.logic.MoveValidator;
 import com.donat.donchess.model.objects.ChessTable;
 import com.donat.donchess.model.objects.Coordinate;
+import com.donat.donchess.model.objects.ValidMove;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.apache.commons.lang3.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -83,22 +84,32 @@ public class GameMasterService {
 
         ChessTable chessTable = tableBuilderService.buildTable(chessMoveDto.getGameId());
 
-        Coordinate coordinateOfFigure = new Coordinate();
-        coordinateOfFigure.setX(chessMoveDto.getMoveFromX());
-        coordinateOfFigure.setY(chessMoveDto.getMoveFromY());
+        Coordinate coordinateOfFigure = new Coordinate(chessMoveDto.getMoveFromX(), chessMoveDto.getMoveFromY());
+        Coordinate aimCoordinate = new Coordinate(chessMoveDto.getMoveToX(), chessMoveDto.getMoveToY());
+        Set<ValidMove> validMoves = moveValidator.validateMove(chessTable, coordinateOfFigure);
 
-        Set<Coordinate> validMoves = moveValidator.validateMove(chessTable, coordinateOfFigure);
-
-        //TODO a visszakapott halmaz alapján megnézzük, hogy valid e a lépés
+        if (validMoves.stream()
+                .noneMatch(validMove -> validMove.getCoordinate().equals(aimCoordinate))) {
+            return false;
+        }
 
         //TODO sakktábla tükrözése, de itt lđeléptetjük a bábut
-        ChessTable chessTableForCheck = new ChessTable();
+        ChessTable chessTableForCheck = cloneTableAndMakeMove(chessTable, chessMoveDto);
 
         //a színt kiszedni a ChessGame objectből
-        boolean inChess = chessAndMateJudge.inChessSituation(Color.WHITE, chessTableForCheck);
+
+        boolean inChess = chessAndMateJudge.inChessSituation(chessTableForCheck);
 
 
         return false;
+    }
+
+    private ChessTable cloneTableAndMakeMove(ChessTable chessTable, ChessMoveDto chessMoveDto) {
+
+        ChessTable cloneChessTable = new ChessTable();
+        //TODO cloning
+
+        return cloneChessTable;
     }
 
     private boolean userIsNextPlayer(User user, ChessGame chessGame) {
@@ -125,6 +136,8 @@ public class GameMasterService {
 
     public void makeMove(ChessMoveDto chessMoveDto) {
         //TODO makemove method
+        //TODO - arra figyelni kell, hogyha a sakkot, akkor a másik királynál az isMoved flag-et át kell állítani
+
     }
 
     public boolean drawCheck(Long chessGameid) {
