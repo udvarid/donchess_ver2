@@ -25,20 +25,25 @@ public class MoveValidator {
         this.chessAndMateJudge = chessAndMateJudge;
     }
 
-    public boolean validmove(ChessTable chessTable, ChessMoveDto chessMoveDto) {
+    public ValidMove validmove(ChessTable chessTable, ChessMoveDto chessMoveDto) {
 
         Coordinate coordinateOfFigure = new Coordinate(chessMoveDto.getMoveFromX(), chessMoveDto.getMoveFromY());
         Coordinate aimCoordinate = new Coordinate(chessMoveDto.getMoveToX(), chessMoveDto.getMoveToY());
 
         Set<ValidMove> validMoves = allValidMoves(chessTable, coordinateOfFigure);
 
-        if (validMoves.stream()
-                .noneMatch(validMove -> validMove.getCoordinate().equals(aimCoordinate))) {
-            return false;
+        ValidMove validMove = validMoves
+                .stream()
+                .filter(vm -> vm.getCoordinate().equals(aimCoordinate))
+                .findFirst()
+                .orElse(null);
+
+        if (validMove != null && !chessAndMateJudge
+                .inChessSituation(cloneTableAndMakeMove(chessTable, chessMoveDto))) {
+            return validMove;
         }
 
-        return !chessAndMateJudge
-                .inChessSituation(cloneTableAndMakeMove(chessTable, chessMoveDto));
+        return null;
 
     }
 
