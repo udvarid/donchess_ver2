@@ -1,6 +1,7 @@
 package com.donat.donchess.model.logic;
 
 import com.donat.donchess.domain.enums.SpecialMoveType;
+import com.donat.donchess.dto.ChessMoveDto;
 import com.donat.donchess.exceptions.NotFoundException;
 import com.donat.donchess.model.enums.ChessFigure;
 import com.donat.donchess.model.enums.Color;
@@ -18,8 +19,68 @@ import java.util.Set;
 @Transactional
 public class MoveValidator {
 
+    private ChessAndMateJudge chessAndMateJudge;
 
-    public Set<ValidMove> validateMove(ChessTable chessTable, Coordinate coordinateOfFigure) {
+    public MoveValidator(ChessAndMateJudge chessAndMateJudge) {
+        this.chessAndMateJudge = chessAndMateJudge;
+    }
+
+    public boolean validmove(ChessTable chessTable, ChessMoveDto chessMoveDto) {
+
+        Coordinate coordinateOfFigure = new Coordinate(chessMoveDto.getMoveFromX(), chessMoveDto.getMoveFromY());
+        Coordinate aimCoordinate = new Coordinate(chessMoveDto.getMoveToX(), chessMoveDto.getMoveToY());
+
+        Set<ValidMove> validMoves = allValidMoves(chessTable, coordinateOfFigure);
+
+        if (validMoves.stream()
+                .noneMatch(validMove -> validMove.getCoordinate().equals(aimCoordinate))) {
+            return false;
+        }
+
+        return !chessAndMateJudge
+                .inChessSituation(cloneTableAndMakeMove(chessTable, chessMoveDto));
+
+    }
+
+    private ChessTable cloneTableAndMakeMove(ChessTable chessTable, ChessMoveDto chessMoveDto) {
+
+        ChessTable cloneChessTable = new ChessTable();
+
+        for (Figure figure : chessTable.getFigures()) {
+            Figure cloneFigure = new Figure(figure.getFigureType(), figure.getColor(),
+                    figure.getCoordX(), figure.getCoordY());
+            cloneFigure.setMoved(figure.isMoved());
+            cloneChessTable.getFigures().add(cloneFigure);
+        }
+
+        cloneChessTable
+                .setWhoIsNext(chessTable.getWhoIsNext().equals(Color.WHITE) ? Color.BLACK : Color.WHITE);
+
+
+        Figure figureToMove = findFigure(cloneChessTable.getFigures(),
+                new Coordinate(chessMoveDto.getMoveFromX(), chessMoveDto.getMoveFromY()));
+        Figure figureToKill = findFigure(cloneChessTable.getFigures(),
+                new Coordinate(chessMoveDto.getMoveToX(), chessMoveDto.getMoveToY()));
+
+        if (figureToKill != null) {
+            cloneChessTable.getFigures().remove(figureToKill);
+        }
+        figureToMove.setCoordX(chessMoveDto.getMoveFromX());
+        figureToMove.setCoordY(chessMoveDto.getMoveFromY());
+        figureToMove.setMoved(true);
+        cloneChessTable.setLastMoveWasDoublePawn(false);
+
+        if (figureToMove.getFigureType().equals(ChessFigure.PAWN) &&
+                Math.abs(chessMoveDto.getMoveFromY() - chessMoveDto.getMoveToY()) == 2) {
+            cloneChessTable.setColumnIndexIfLastMoveWasDoublePawn(chessMoveDto.getMoveFromX());
+            cloneChessTable.setLastMoveWasDoublePawn(true);
+        }
+
+        return cloneChessTable;
+    }
+
+
+    public Set<ValidMove> allValidMoves(ChessTable chessTable, Coordinate coordinateOfFigure) {
         Figure figureToMove = findFigure(chessTable.getFigures(), coordinateOfFigure);
         if (figureToMove == null) {
             throw new NotFoundException("The figure can not be found");
@@ -266,7 +327,7 @@ public class MoveValidator {
     }
 
 
-    private Figure findFigure(Set<Figure> figures, Coordinate coordinateOfFigure) {
+    public Figure findFigure(Set<Figure> figures, Coordinate coordinateOfFigure) {
         return figures
                 .stream()
                 .filter(figure -> figure.getCoordX() == coordinateOfFigure.getX() &&
@@ -274,4 +335,6 @@ public class MoveValidator {
                 .findAny()
                 .orElse(null);
     }
+
+
 }

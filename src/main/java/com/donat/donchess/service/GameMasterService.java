@@ -4,9 +4,9 @@ import com.donat.donchess.domain.ChessGame;
 import com.donat.donchess.domain.QChessGame;
 import com.donat.donchess.domain.User;
 import com.donat.donchess.domain.enums.ChessGameStatus;
-import com.donat.donchess.domain.enums.SpecialMoveType;
 import com.donat.donchess.dto.ChessMoveDto;
 import com.donat.donchess.exceptions.InvalidException;
+import com.donat.donchess.exceptions.NotFoundException;
 import com.donat.donchess.model.enums.ChessFigure;
 import com.donat.donchess.model.enums.Color;
 import com.donat.donchess.model.logic.ChessAndMateJudge;
@@ -14,7 +14,9 @@ import com.donat.donchess.model.logic.DrawJudge;
 import com.donat.donchess.model.logic.MoveValidator;
 import com.donat.donchess.model.objects.ChessTable;
 import com.donat.donchess.model.objects.Coordinate;
+import com.donat.donchess.model.objects.Figure;
 import com.donat.donchess.model.objects.ValidMove;
+import com.donat.donchess.repository.ChessGameRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.apache.commons.lang3.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +36,7 @@ public class GameMasterService {
     private DrawJudge drawJudge;
     private ChessAndMateJudge chessAndMateJudge;
     private SecurityService securityService;
+    private ChessGameRepository chessGameRepository;
 
     @Autowired
     private Provider<EntityManager> entityManager;
@@ -42,23 +45,26 @@ public class GameMasterService {
                              MoveValidator moveValidator,
                              DrawJudge drawJudge,
                              ChessAndMateJudge chessAndMateJudge,
-                             SecurityService securityService) {
+                             SecurityService securityService,
+                             ChessGameRepository chessGameRepository) {
         this.tableBuilderService = tableBuilderService;
         this.moveValidator = moveValidator;
         this.drawJudge = drawJudge;
         this.chessAndMateJudge = chessAndMateJudge;
         this.securityService = securityService;
+        this.chessGameRepository = chessGameRepository;
     }
 
-    public boolean validateMove(ChessMoveDto chessMoveDto) {
+    public void handleMove(ChessMoveDto chessMoveDto) {
         JPAQueryFactory query = new JPAQueryFactory(entityManager);
         QChessGame chessGameFromQ = QChessGame.chessGame;
 
         User user = securityService.getChallenger();
-        ChessGame chessGame = query
-                .selectFrom(chessGameFromQ)
-                .where(chessGameFromQ.id.eq(chessMoveDto.getGameId()))
-                .fetchOne();
+        //TODO ezt a repoból vegyük le, hogy persistence legyen
+
+        ChessGame chessGame = chessGameRepository.findById(chessMoveDto.getGameId())
+                .orElseThrow(()-> new NotFoundException("Game can not be found"));
+
         if (!userIsPlaying(user, chessGame)) {
             throw new InvalidException("Player is not playing in this game");
         }
@@ -74,43 +80,20 @@ public class GameMasterService {
             throw new InvalidException("This is not the proper move id!");
         }
 
-        if (!validSpecialMoveType(chessMoveDto)) {
-            throw new InvalidException("Not valid special move!");
-        }
-
         if (!validPromoteType(chessMoveDto)) {
             throw new InvalidException("Not valid promotion type!");
         }
 
         ChessTable chessTable = tableBuilderService.buildTable(chessMoveDto.getGameId());
 
-        Coordinate coordinateOfFigure = new Coordinate(chessMoveDto.getMoveFromX(), chessMoveDto.getMoveFromY());
-        Coordinate aimCoordinate = new Coordinate(chessMoveDto.getMoveToX(), chessMoveDto.getMoveToY());
-        Set<ValidMove> validMoves = moveValidator.validateMove(chessTable, coordinateOfFigure);
 
-        if (validMoves.stream()
-                .noneMatch(validMove -> validMove.getCoordinate().equals(aimCoordinate))) {
-            return false;
+        if (moveValidator.validmove(chessTable, chessMoveDto)) {
+            makeMove(chessGame, chessTable, chessMoveDto);
         }
 
-        //TODO sakktábla tükrözése, de itt lđeléptetjük a bábut
-        ChessTable chessTableForCheck = cloneTableAndMakeMove(chessTable, chessMoveDto);
-
-        //a színt kiszedni a ChessGame objectből
-
-        boolean inChess = chessAndMateJudge.inChessSituation(chessTableForCheck);
-
-
-        return false;
     }
 
-    private ChessTable cloneTableAndMakeMove(ChessTable chessTable, ChessMoveDto chessMoveDto) {
 
-        ChessTable cloneChessTable = new ChessTable();
-        //TODO cloning
-
-        return cloneChessTable;
-    }
 
     private boolean userIsNextPlayer(User user, ChessGame chessGame) {
         return chessGame.getNextMove().equals(Color.WHITE) &&
@@ -130,17 +113,25 @@ public class GameMasterService {
                 EnumUtils.isValidEnum(ChessFigure.class, chessMoveDto.getPromoteToFigure());
     }
 
-    private boolean validSpecialMoveType(ChessMoveDto chessMoveDto) {
-        return EnumUtils.isValidEnum(SpecialMoveType.class, chessMoveDto.getSpecialMoveType());
-    }
-
-    public void makeMove(ChessMoveDto chessMoveDto) {
+    public void makeMove(ChessGame chessGame, ChessTable chessTable, ChessMoveDto chessMoveDto) {
         //TODO makemove method
-        //TODO - arra figyelni kell, hogyha a sakkot, akkor a másik királynál az isMoved flag-et át kell állítani
+
+        //mozgatandó figura keresése
+
+        //célfigura keresése
+
+        //mozgás ill. ütés
+
+        //chessgame ill. chesstable esetén változtatás végzése
+
+        //chessgame mentése
+
+        //chessmove létrehozása és mentése
 
     }
 
     public boolean drawCheck(Long chessGameid) {
+        //ezt áttenni a sakk/matt figyelő szervízbe
         return drawJudge.checkDraw(chessGameid);
     }
 

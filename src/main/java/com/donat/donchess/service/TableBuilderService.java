@@ -19,6 +19,7 @@ import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @Service
@@ -79,7 +80,6 @@ public class TableBuilderService {
         }
 
 
-
         //en-passan
         if (chessMove.getSpecialMoveType().equals(SpecialMoveType.EN_PASSAN)) {
             Figure figureToKillDuringEnPassan =
@@ -94,7 +94,7 @@ public class TableBuilderService {
             int targetXofRook = chessMove.getMoveToX() > chessMove.getMoveFromX() ?
                     6 : 4;
             Figure rookToMoveDueToCastling =
-                    findFigure(chessTable.getFigures(),expectedXofRook, chessMove.getMoveFromY());
+                    findFigure(chessTable.getFigures(), expectedXofRook, chessMove.getMoveFromY());
             rookToMoveDueToCastling.setCoordX(targetXofRook);
         }
 
@@ -103,6 +103,21 @@ public class TableBuilderService {
             figureToMove.setFigureType(chessMove.getPromoteType());
         }
 
+        //in case of chess, the moveAlready flag of the King should be set true
+        setToMovedTheKingInCaseOfChess(chessTable, chessMove, figureToKill);
+
+    }
+
+    private void setToMovedTheKingInCaseOfChess(ChessTable chessTable, ChessMove chessMove, Figure figureToKill) {
+        if (Objects.equals(Boolean.TRUE, chessMove.isChessGiven())) {
+            for (Figure enemyKing : chessTable.getFigures()) {
+                if (!enemyKing.getColor().equals(figureToKill.getColor()) &&
+                        enemyKing.getFigureType().equals(ChessFigure.KING)) {
+                    enemyKing.setMoved(true);
+                    break;
+                }
+            }
+        }
     }
 
     public Figure findFigure(Set<Figure> figures, Integer coordX, Integer coordY) {
@@ -122,7 +137,7 @@ public class TableBuilderService {
     public Set<Figure> normalInitChessSet() {
         Set<Figure> figures = new HashSet<>();
         //Pawns
-        for (int i = 1; i <= 8 ; i++) {
+        for (int i = 1; i <= 8; i++) {
             Figure whitePawn = new Figure(ChessFigure.PAWN, Color.WHITE, i, 2);
             Figure blackPawn = new Figure(ChessFigure.PAWN, Color.BLACK, i, 7);
             figures.add(whitePawn);

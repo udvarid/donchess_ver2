@@ -39,6 +39,16 @@ public class ChessMove {
     @Enumerated(EnumType.STRING)
     private ChessFigure promoteType;
 
+    private Boolean chessGiven = false;
+
+    public Boolean isChessGiven() {
+        return chessGiven;
+    }
+
+    public void setChessGiven(Boolean chessGiven) {
+        this.chessGiven = chessGiven;
+    }
+
     public ChessFigure getPromoteType() {
         return promoteType;
     }

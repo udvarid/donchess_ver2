@@ -25,8 +25,6 @@ public class ChessMoveDto {
     @Max(8)
     private int moveToY;
 
-    private String specialMoveType;
-
     private String promoteToFigure;
 
     public Long getGameId() {
@@ -75,14 +73,6 @@ public class ChessMoveDto {
 
     public void setMoveToY(int moveToY) {
         this.moveToY = moveToY;
-    }
-
-    public String getSpecialMoveType() {
-        return specialMoveType;
-    }
-
-    public void setSpecialMoveType(String specialMoveType) {
-        this.specialMoveType = specialMoveType;
     }
 
     public String getPromoteToFigure() {
