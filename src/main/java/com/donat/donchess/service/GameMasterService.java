@@ -5,12 +5,13 @@ import com.donat.donchess.domain.ChessMove;
 import com.donat.donchess.domain.User;
 import com.donat.donchess.domain.enums.ChessGameStatus;
 import com.donat.donchess.domain.enums.Result;
-import com.donat.donchess.dto.ChessMoveDto;
+import com.donat.donchess.dto.chessGame.ChessMoveDto;
+import com.donat.donchess.dto.chessGame.ChessTableDto;
+import com.donat.donchess.dto.chessGame.ValidMovesDto;
 import com.donat.donchess.exceptions.InvalidException;
 import com.donat.donchess.exceptions.NotFoundException;
 import com.donat.donchess.model.enums.ChessFigure;
 import com.donat.donchess.model.enums.Color;
-import com.donat.donchess.model.logic.ChessAndMateJudge;
 import com.donat.donchess.model.logic.DrawJudge;
 import com.donat.donchess.model.logic.MoveValidator;
 import com.donat.donchess.model.objects.ChessTable;
@@ -38,7 +39,6 @@ public class GameMasterService {
     private SecurityService securityService;
     private ChessGameRepository chessGameRepository;
     private ChessMoveRepository chessMoveRepository;
-    private ChessAndMateJudge chessAndMateJudge;
 
     @Autowired
     private Provider<EntityManager> entityManager;
@@ -48,15 +48,13 @@ public class GameMasterService {
                              DrawJudge drawJudge,
                              SecurityService securityService,
                              ChessGameRepository chessGameRepository,
-                             ChessMoveRepository chessMoveRepository,
-                             ChessAndMateJudge chessAndMateJudge) {
+                             ChessMoveRepository chessMoveRepository) {
         this.tableBuilderService = tableBuilderService;
         this.moveValidator = moveValidator;
         this.drawJudge = drawJudge;
         this.securityService = securityService;
         this.chessGameRepository = chessGameRepository;
         this.chessMoveRepository = chessMoveRepository;
-        this.chessAndMateJudge = chessAndMateJudge;
     }
 
     public void handleMove(ChessMoveDto chessMoveDto) {
@@ -121,6 +119,18 @@ public class GameMasterService {
                 .findFigure(chessTable.getFigures(),
                         new Coordinate(chessMoveDto.getMoveToX(), chessMoveDto.getMoveToY()));
 
+        setChessTable(chessTable, chessMoveDto, figure, aimFigure);
+
+        setMoveOfFigure(chessMoveDto, figure);
+
+        ChessMove chessMove = createChessMove(chessGame, chessTable, chessMoveDto, validMove, figure);
+        chessMoveRepository.saveAndFlush(chessMove);
+
+        setChessGame(chessGame, chessTable, chessMove);
+        chessGameRepository.saveAndFlush(chessGame);
+    }
+
+    private void setChessTable(ChessTable chessTable, ChessMoveDto chessMoveDto, Figure figure, Figure aimFigure) {
         chessTable.setWhoIsNext(changeColor(chessTable.getWhoIsNext()));
         chessTable.setActualMoveNumber(chessTable.getActualMoveNumber() + 1);
         if (figure.getFigureType().equals(ChessFigure.PAWN)) {
@@ -135,14 +145,18 @@ public class GameMasterService {
             chessTable.getFigures().remove(aimFigure);
             chessTable.setLastHitMoveNumber(chessTable.getActualMoveNumber());
         }
+    }
 
+    private void setMoveOfFigure(ChessMoveDto chessMoveDto, Figure figure) {
         figure.setCoordX(chessMoveDto.getMoveToX());
         figure.setCoordY(chessMoveDto.getMoveToY());
         figure.setMoved(true);
         if (!chessMoveDto.getPromoteToFigure().isEmpty()) {
             figure.setFigureType(ChessFigure.valueOf(chessMoveDto.getPromoteToFigure()));
         }
+    }
 
+    private ChessMove createChessMove(ChessGame chessGame, ChessTable chessTable, ChessMoveDto chessMoveDto, ValidMove validMove, Figure figure) {
         ChessMove chessMove = new ChessMove();
         chessMove.setSpecialMoveType(validMove.getSpecialMoveType());
         chessMove.setPromoteType(ChessFigure.valueOf(chessMoveDto.getPromoteToFigure()));
@@ -152,22 +166,21 @@ public class GameMasterService {
         chessMove.setMoveToY(chessMoveDto.getMoveToY());
         chessMove.setMoveId(chessGame.getLastMoveId() + 1);
         chessMove.setChessGiven(chessGiven(chessTable, figure));
+        return chessMove;
+    }
 
-        chessMoveRepository.saveAndFlush(chessMove);
-
+    private void setChessGame(ChessGame chessGame, ChessTable chessTable, ChessMove chessMove) {
         if (!chessMove.isChessGiven() && drawJudge.checkDraw(chessTable)) {
             chessGame.setChessGameStatus(ChessGameStatus.CLOSED);
             chessGame.setResult(Result.DRAWN);
         }
-        if (chessMove.isChessGiven() && chessAndMateJudge.itIsMate(chessTable)) {
+        if (chessMove.isChessGiven() && drawJudge.noPossibleMove(chessTable)) {
             chessGame.setChessGameStatus(ChessGameStatus.CLOSED);
             chessGame.setResult(chessTable.getWhoIsNext().equals(Color.WHITE) ? Result.WON_USER_TWO : Result.WON_USER_ONE);
         }
         chessGame.getChessMoves().add(chessMove);
         chessGame.setLastMoveId(chessGame.getLastMoveId() + 1);
         chessGame.setNextMove(changeColor(chessGame.getNextMove()));
-
-        chessGameRepository.saveAndFlush(chessGame);
     }
 
     private Boolean chessGiven(ChessTable chessTable, Figure figure) {
@@ -195,7 +208,19 @@ public class GameMasterService {
     }
 
 
+    public ChessTableDto giveChessTable(long chessGameId) {
+        ChessTableDto chessTableDto = new ChessTableDto();
 
+        //TODO fill the DTO
 
+        return chessTableDto;
+    }
 
+    public ValidMovesDto giveValidMoves(long chessGameId) {
+        ValidMovesDto validMovesDto = new ValidMovesDto();
+
+        //TODO fill the DTO
+
+        return validMovesDto;
+    }
 }

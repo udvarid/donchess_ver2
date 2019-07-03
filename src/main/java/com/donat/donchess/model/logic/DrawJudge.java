@@ -1,13 +1,44 @@
 package com.donat.donchess.model.logic;
 
+import com.donat.donchess.domain.ChessGame;
+import com.donat.donchess.domain.ChessMove;
+import com.donat.donchess.domain.QChessGame;
+import com.donat.donchess.domain.QChessMove;
+import com.donat.donchess.dto.chessGame.ChessMoveDto;
 import com.donat.donchess.model.enums.ChessFigure;
 import com.donat.donchess.model.enums.Color;
 import com.donat.donchess.model.objects.ChessTable;
+import com.donat.donchess.model.objects.Coordinate;
 import com.donat.donchess.model.objects.Figure;
+import com.donat.donchess.model.objects.ValidMove;
+import com.donat.donchess.service.TableBuilderService;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import javax.inject.Provider;
+import javax.persistence.EntityManager;
+import java.util.List;
+import java.util.Set;
 
 @Service
 public class DrawJudge {
+
+    @Autowired
+    private Provider<EntityManager> entityManager;
+
+    private MoveValidator moveValidator;
+    private ChessAndMateJudge chessAndMateJudge;
+    private TableBuilderService tableBuilderService;
+
+    public DrawJudge(MoveValidator moveValidator,
+                     ChessAndMateJudge chessAndMateJudge,
+                     TableBuilderService tableBuilderService) {
+        this.moveValidator = moveValidator;
+        this.chessAndMateJudge = chessAndMateJudge;
+        this.tableBuilderService = tableBuilderService;
+    }
+
     public boolean checkDraw(ChessTable chessTable) {
 
         if (fiftyMoveRule(chessTable)) {
@@ -30,28 +61,85 @@ public class DrawJudge {
     }
 
     private boolean threeFoldRepetition(ChessTable chessTable) {
-        //TODO leprogramozni
+        JPAQueryFactory query = new JPAQueryFactory(entityManager);
+        QChessMove chessMoveFromQ = QChessMove.chessMove;
+        QChessGame chessGameFromQ = QChessGame.chessGame;
 
-        //elkérni a chessmove history-t és az elejétől kezdve felépíteni a táblát
+        List<ChessMove> chessMoves = query
+                .selectFrom(chessMoveFromQ)
+                .orderBy(chessMoveFromQ.moveId.asc())
+                .where(chessMoveFromQ.id.eq(chessTable.getChessGameId()))
+                .fetch();
 
-        //ha a mostani állással megegyező állást (darabszám, koordináták, típus egyezősége) találunk 2szer, akkor true
+        ChessGame chessGame = query
+                .selectFrom(chessGameFromQ)
+                .where(chessGameFromQ.id.eq(chessTable.getChessGameId()))
+                .fetchOne();
 
+        ChessTable chessTableForCompare = new ChessTable();
+        chessTableForCompare.setChessGameId(chessTable.getChessGameId());
+        chessTableForCompare.setWhoIsNext(chessTable.getWhoIsNext());
+        chessTableForCompare.setActualMoveNumber(chessTable.getActualMoveNumber());
+
+        tableBuilderService.initChessTable(chessTableForCompare, chessGame);
+        int numberOfSameTable = 0;
+        for (ChessMove chessMove : chessMoves) {
+            tableBuilderService.makeMove(chessTableForCompare, chessMove);
+            if (sameTable(chessTableForCompare.getFigures(), chessTable.getFigures())) {
+                numberOfSameTable++;
+            }
+            if (numberOfSameTable == 2) {
+                return true;
+            }
+        }
 
         return false;
     }
 
-    private boolean noPossibleMove(ChessTable chessTable) {
-        for (Figure figure : chessTable.getFigures()) {
-            if (figure.getColor().equals(chessTable.getWhoIsNext())) {
-                //TODO leprogramozni
-                //elkérjük az adott figurára az összes lehetséges lépést
+    private boolean sameTable(Set<Figure> figuresOne, Set<Figure> figuresTwo) {
 
-                //lelépjük és megnézzük, hogy sakkmentes e a lépés
-
-                //ha csak egy ilyet is találunk, akkor örülünk és false a válasz
+        for (Figure figure : figuresOne) {
+            if (figuresTwo.stream()
+                    .noneMatch(figureInSet -> figureInSet.equals(figure))) {
+                return false;
+            }
+        }
+        for (Figure figure : figuresTwo) {
+            if (figuresOne.stream()
+                    .noneMatch(figureInSet -> figureInSet.equals(figure))) {
+                return false;
             }
         }
         return true;
+    }
+
+    public boolean noPossibleMove(ChessTable chessTable) {
+        for (Figure figure : chessTable.getFigures()) {
+            if (figure.getColor().equals(chessTable.getWhoIsNext())) {
+                Set<ValidMove> validMoves =
+                        moveValidator.allValidMoves(chessTable, new Coordinate(figure.getCoordX(), figure.getCoordY()));
+
+                for (ValidMove validMove : validMoves) {
+                    ChessMoveDto chessMoveDto = setMoveDto(chessTable, figure, validMove);
+                    if (!chessAndMateJudge
+                            .inChessSituation(moveValidator.cloneTableAndMakeMove(chessTable, chessMoveDto))) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+
+    private ChessMoveDto setMoveDto(ChessTable chessTable, Figure figure, ValidMove validMove) {
+        ChessMoveDto chessMoveDto = new ChessMoveDto();
+        chessMoveDto.setGameId(chessTable.getChessGameId());
+        chessMoveDto.setMoveFromX(figure.getCoordX());
+        chessMoveDto.setMoveFromY(figure.getCoordY());
+        chessMoveDto.setMoveId(chessTable.getActualMoveNumber());
+        chessMoveDto.setMoveToX(validMove.getCoordinate().getX());
+        chessMoveDto.setMoveToY(validMove.getCoordinate().getY());
+        return chessMoveDto;
     }
 
     private boolean inSufficientMaterials(ChessTable chessTable) {

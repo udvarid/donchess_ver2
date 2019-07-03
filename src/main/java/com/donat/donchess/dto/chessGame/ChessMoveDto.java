@@ -1,4 +1,4 @@
-package com.donat.donchess.dto;
+package com.donat.donchess.dto.chessGame;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;

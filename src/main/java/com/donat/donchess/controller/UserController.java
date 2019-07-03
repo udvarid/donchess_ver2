@@ -1,7 +1,7 @@
 package com.donat.donchess.controller;
 
-import com.donat.donchess.dto.RegisterDto;
-import com.donat.donchess.dto.UserDto;
+import com.donat.donchess.dto.User.RegisterDto;
+import com.donat.donchess.dto.User.UserDto;
 import com.donat.donchess.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

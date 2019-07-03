@@ -1,7 +1,7 @@
 package com.donat.donchess.model.logic;
 
 import com.donat.donchess.domain.enums.SpecialMoveType;
-import com.donat.donchess.dto.ChessMoveDto;
+import com.donat.donchess.dto.chessGame.ChessMoveDto;
 import com.donat.donchess.exceptions.NotFoundException;
 import com.donat.donchess.model.enums.ChessFigure;
 import com.donat.donchess.model.enums.Color;
@@ -47,7 +47,7 @@ public class MoveValidator {
 
     }
 
-    private ChessTable cloneTableAndMakeMove(ChessTable chessTable, ChessMoveDto chessMoveDto) {
+    public ChessTable cloneTableAndMakeMove(ChessTable chessTable, ChessMoveDto chessMoveDto) {
 
         ChessTable cloneChessTable = new ChessTable();
 

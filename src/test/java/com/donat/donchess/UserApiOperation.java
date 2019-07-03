@@ -1,7 +1,7 @@
 package com.donat.donchess;
 
-import com.donat.donchess.dto.RegisterDto;
-import com.donat.donchess.dto.UserDto;
+import com.donat.donchess.dto.User.RegisterDto;
+import com.donat.donchess.dto.User.UserDto;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;

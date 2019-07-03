@@ -1,4 +1,4 @@
-package com.donat.donchess.dto;
+package com.donat.donchess.dto.User;
 
 public class RegisterDto {
 
