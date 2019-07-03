@@ -49,4 +49,12 @@ public class ChessAndMateJudge {
                 .findAny()
                 .orElseThrow(() -> new NotFoundException("King can not be found"));
     }
+
+    public boolean itIsMate(ChessTable chessTable) {
+        boolean mate = false;
+        //TODO - leprogramozni
+
+        //szerintem használjuk a DrawJudge osztály noPossibleMoves metódusát
+        return mate;
+    }
 }

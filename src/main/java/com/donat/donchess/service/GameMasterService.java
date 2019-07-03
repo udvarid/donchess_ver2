@@ -4,11 +4,13 @@ import com.donat.donchess.domain.ChessGame;
 import com.donat.donchess.domain.ChessMove;
 import com.donat.donchess.domain.User;
 import com.donat.donchess.domain.enums.ChessGameStatus;
+import com.donat.donchess.domain.enums.Result;
 import com.donat.donchess.dto.ChessMoveDto;
 import com.donat.donchess.exceptions.InvalidException;
 import com.donat.donchess.exceptions.NotFoundException;
 import com.donat.donchess.model.enums.ChessFigure;
 import com.donat.donchess.model.enums.Color;
+import com.donat.donchess.model.logic.ChessAndMateJudge;
 import com.donat.donchess.model.logic.DrawJudge;
 import com.donat.donchess.model.logic.MoveValidator;
 import com.donat.donchess.model.objects.ChessTable;
@@ -36,6 +38,7 @@ public class GameMasterService {
     private SecurityService securityService;
     private ChessGameRepository chessGameRepository;
     private ChessMoveRepository chessMoveRepository;
+    private ChessAndMateJudge chessAndMateJudge;
 
     @Autowired
     private Provider<EntityManager> entityManager;
@@ -45,13 +48,15 @@ public class GameMasterService {
                              DrawJudge drawJudge,
                              SecurityService securityService,
                              ChessGameRepository chessGameRepository,
-                             ChessMoveRepository chessMoveRepository) {
+                             ChessMoveRepository chessMoveRepository,
+                             ChessAndMateJudge chessAndMateJudge) {
         this.tableBuilderService = tableBuilderService;
         this.moveValidator = moveValidator;
         this.drawJudge = drawJudge;
         this.securityService = securityService;
         this.chessGameRepository = chessGameRepository;
         this.chessMoveRepository = chessMoveRepository;
+        this.chessAndMateJudge = chessAndMateJudge;
     }
 
     public void handleMove(ChessMoveDto chessMoveDto) {
@@ -150,7 +155,14 @@ public class GameMasterService {
 
         chessMoveRepository.saveAndFlush(chessMove);
 
-        //TODO döntetlen/győzelem kiértékelés és result ill chessGameStatus állítása ha kell
+        if (!chessMove.isChessGiven() && drawJudge.checkDraw(chessTable)) {
+            chessGame.setChessGameStatus(ChessGameStatus.CLOSED);
+            chessGame.setResult(Result.DRAWN);
+        }
+        if (chessMove.isChessGiven() && chessAndMateJudge.itIsMate(chessTable)) {
+            chessGame.setChessGameStatus(ChessGameStatus.CLOSED);
+            chessGame.setResult(chessTable.getWhoIsNext().equals(Color.WHITE) ? Result.WON_USER_TWO : Result.WON_USER_ONE);
+        }
         chessGame.getChessMoves().add(chessMove);
         chessGame.setLastMoveId(chessGame.getLastMoveId() + 1);
         chessGame.setNextMove(changeColor(chessGame.getNextMove()));
@@ -182,14 +194,8 @@ public class GameMasterService {
         return nextMove.equals(Color.WHITE) ? Color.BLACK : Color.WHITE;
     }
 
-    public boolean drawCheck(Long chessGameid) {
-        //ezt áttenni a sakk/matt figyelő szervízbe
-        return drawJudge.checkDraw(chessGameid);
-    }
 
-    public boolean checkMateCheck() {
-        //TODO checkMate checking - no idea how
-        return false;
-    }
+
+
 
 }
