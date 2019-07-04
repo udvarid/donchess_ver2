@@ -2,43 +2,43 @@ package com.donat.donchess.dto.chessGame;
 
 public class CoordinateDto {
 
-    private Long fromX;
+    private int fromX;
 
-    private Long fromY;
+    private int fromY;
 
-    private Long toX;
+    private int toX;
 
-    private Long toY;
+    private int toY;
 
-    public Long getFromX() {
+    public int getFromX() {
         return fromX;
     }
 
-    public void setFromX(Long fromX) {
+    public void setFromX(int fromX) {
         this.fromX = fromX;
     }
 
-    public Long getFromY() {
+    public int getFromY() {
         return fromY;
     }
 
-    public void setFromY(Long fromY) {
+    public void setFromY(int fromY) {
         this.fromY = fromY;
     }
 
-    public Long getToX() {
+    public int getToX() {
         return toX;
     }
 
-    public void setToX(Long toX) {
+    public void setToX(int toX) {
         this.toX = toX;
     }
 
-    public Long getToY() {
+    public int getToY() {
         return toY;
     }
 
-    public void setToY(Long toY) {
+    public void setToY(int toY) {
         this.toY = toY;
     }
 }

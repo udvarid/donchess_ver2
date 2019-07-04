@@ -44,7 +44,7 @@ public class TableBuilderService {
         List<ChessMove> chessMoves = query
                 .selectFrom(chessMoveFromQ)
                 .orderBy(chessMoveFromQ.moveId.asc())
-                .where(chessMoveFromQ.id.eq(chessGame.getId()))
+                .where(chessMoveFromQ.chessGame.id.eq(chessGameId))
                 .fetch();
 
         chessTable.setChessGameId(chessGameId);

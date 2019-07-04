@@ -15,6 +15,9 @@ public class ChessMove {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne
+    private ChessGame chessGame;
+
     private int moveId;
 
     @Min(value = 1)
@@ -40,6 +43,14 @@ public class ChessMove {
     private ChessFigure promoteType;
 
     private Boolean chessGiven = false;
+
+    public ChessGame getChessGame() {
+        return chessGame;
+    }
+
+    public void setChessGame(ChessGame chessGame) {
+        this.chessGame = chessGame;
+    }
 
     public Boolean isChessGiven() {
         return chessGiven;

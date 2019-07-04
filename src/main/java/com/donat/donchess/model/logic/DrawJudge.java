@@ -30,13 +30,16 @@ public class DrawJudge {
     private MoveValidator moveValidator;
     private ChessAndMateJudge chessAndMateJudge;
     private TableBuilderService tableBuilderService;
+    private ValidMoveInspector validMoveInspector;
 
     public DrawJudge(MoveValidator moveValidator,
                      ChessAndMateJudge chessAndMateJudge,
-                     TableBuilderService tableBuilderService) {
+                     TableBuilderService tableBuilderService,
+                     ValidMoveInspector validMoveInspector) {
         this.moveValidator = moveValidator;
         this.chessAndMateJudge = chessAndMateJudge;
         this.tableBuilderService = tableBuilderService;
+        this.validMoveInspector = validMoveInspector;
     }
 
     public boolean checkDraw(ChessTable chessTable) {
@@ -68,7 +71,7 @@ public class DrawJudge {
         List<ChessMove> chessMoves = query
                 .selectFrom(chessMoveFromQ)
                 .orderBy(chessMoveFromQ.moveId.asc())
-                .where(chessMoveFromQ.id.eq(chessTable.getChessGameId()))
+                .where(chessMoveFromQ.chessGame.id.eq(chessTable.getChessGameId()))
                 .fetch();
 
         ChessGame chessGame = query
@@ -117,7 +120,7 @@ public class DrawJudge {
         for (Figure figure : chessTable.getFigures()) {
             if (figure.getColor().equals(chessTable.getWhoIsNext())) {
                 Set<ValidMove> validMoves =
-                        moveValidator.allValidMoves(chessTable, new Coordinate(figure.getCoordX(), figure.getCoordY()));
+                        validMoveInspector.allValidMoves(chessTable, new Coordinate(figure.getCoordX(), figure.getCoordY()));
 
                 for (ValidMove validMove : validMoves) {
                     ChessMoveDto chessMoveDto = setMoveDto(chessTable, figure, validMove);

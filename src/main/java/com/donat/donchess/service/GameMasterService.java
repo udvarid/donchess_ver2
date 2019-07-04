@@ -1,25 +1,24 @@
 package com.donat.donchess.service;
 
-import com.donat.donchess.domain.ChessGame;
-import com.donat.donchess.domain.ChessMove;
-import com.donat.donchess.domain.User;
+import com.donat.donchess.domain.*;
 import com.donat.donchess.domain.enums.ChessGameStatus;
 import com.donat.donchess.domain.enums.Result;
-import com.donat.donchess.dto.chessGame.ChessMoveDto;
-import com.donat.donchess.dto.chessGame.ChessTableDto;
-import com.donat.donchess.dto.chessGame.ValidMovesDto;
+import com.donat.donchess.dto.User.UserDto;
+import com.donat.donchess.dto.chessGame.*;
 import com.donat.donchess.exceptions.InvalidException;
 import com.donat.donchess.exceptions.NotFoundException;
 import com.donat.donchess.model.enums.ChessFigure;
 import com.donat.donchess.model.enums.Color;
 import com.donat.donchess.model.logic.DrawJudge;
 import com.donat.donchess.model.logic.MoveValidator;
+import com.donat.donchess.model.logic.ValidMoveInspector;
 import com.donat.donchess.model.objects.ChessTable;
 import com.donat.donchess.model.objects.Coordinate;
 import com.donat.donchess.model.objects.Figure;
 import com.donat.donchess.model.objects.ValidMove;
 import com.donat.donchess.repository.ChessGameRepository;
 import com.donat.donchess.repository.ChessMoveRepository;
+import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.apache.commons.lang3.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -27,7 +26,9 @@ import org.springframework.stereotype.Service;
 import javax.inject.Provider;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -39,6 +40,7 @@ public class GameMasterService {
     private SecurityService securityService;
     private ChessGameRepository chessGameRepository;
     private ChessMoveRepository chessMoveRepository;
+    private ValidMoveInspector validMoveInspector;
 
     @Autowired
     private Provider<EntityManager> entityManager;
@@ -48,13 +50,15 @@ public class GameMasterService {
                              DrawJudge drawJudge,
                              SecurityService securityService,
                              ChessGameRepository chessGameRepository,
-                             ChessMoveRepository chessMoveRepository) {
+                             ChessMoveRepository chessMoveRepository,
+                             ValidMoveInspector validMoveInspector) {
         this.tableBuilderService = tableBuilderService;
         this.moveValidator = moveValidator;
         this.drawJudge = drawJudge;
         this.securityService = securityService;
         this.chessGameRepository = chessGameRepository;
         this.chessMoveRepository = chessMoveRepository;
+        this.validMoveInspector = validMoveInspector;
     }
 
     public void handleMove(ChessMoveDto chessMoveDto) {
@@ -112,10 +116,10 @@ public class GameMasterService {
     }
 
     public void makeMove(ChessGame chessGame, ChessTable chessTable, ChessMoveDto chessMoveDto, ValidMove validMove) {
-        Figure figure = moveValidator
+        Figure figure = validMoveInspector
                 .findFigure(chessTable.getFigures(),
                         new Coordinate(chessMoveDto.getMoveFromX(), chessMoveDto.getMoveFromY()));
-        Figure aimFigure = moveValidator
+        Figure aimFigure = validMoveInspector
                 .findFigure(chessTable.getFigures(),
                         new Coordinate(chessMoveDto.getMoveToX(), chessMoveDto.getMoveToY()));
 
@@ -185,7 +189,7 @@ public class GameMasterService {
 
     private Boolean chessGiven(ChessTable chessTable, Figure figure) {
 
-        Set<ValidMove> validMoves = moveValidator.allValidMoves(chessTable,
+        Set<ValidMove> validMoves = validMoveInspector.allValidMoves(chessTable,
                 new Coordinate(figure.getCoordX(), figure.getCoordY()));
 
         Figure enemyKing = chessTable
@@ -194,7 +198,7 @@ public class GameMasterService {
                 .filter(king -> king.getFigureType().equals(ChessFigure.KING) &&
                         !king.getColor().equals(figure.getColor()))
                 .findFirst()
-                .orElseThrow(()-> new NotFoundException("King not found!"));
+                .orElseThrow(() -> new NotFoundException("King not found!"));
 
         return validMoves
                 .stream()
@@ -209,18 +213,106 @@ public class GameMasterService {
 
 
     public ChessTableDto giveChessTable(long chessGameId) {
+        //TODO user validáció
         ChessTableDto chessTableDto = new ChessTableDto();
+        JPAQueryFactory query = new JPAQueryFactory(entityManager);
 
-        //TODO fill the DTO
+        QChessGame chessGameFromQ = QChessGame.chessGame;
+        ChessGame chessGame = query.selectFrom(chessGameFromQ)
+                .where(chessGameFromQ.id.eq(chessGameId))
+                .fetchOne();
+
+        ChessTable chessTable = tableBuilderService.buildTable(chessGameId);
+
+        chessTableDto.setChessGameId(chessGameId);
+        chessTableDto.setChessGameStatus(chessGame.getChessGameStatus());
+        chessTableDto.setChessGameType(chessGame.getChessGameType());
+        chessTableDto.setLastMoveId(chessGame.getLastMoveId());
+        chessTableDto.setResult(chessGame.getResult());
+        chessTableDto.setNextMove(chessGame.getNextMove());
+        chessTableDto.setUserOne(userDtoMapper(chessGame.getUserOne()));
+        chessTableDto.setUserTwo(userDtoMapper(chessGame.getUserTwo()));
+        chessTableDto.setFigures(chessTable
+                .getFigures()
+                .stream()
+                .map(figure -> figureDtoMapper(figure))
+                .collect(Collectors.toSet()));
 
         return chessTableDto;
     }
 
-    public ValidMovesDto giveValidMoves(long chessGameId) {
-        ValidMovesDto validMovesDto = new ValidMovesDto();
+    private FigureDto figureDtoMapper(Figure figure) {
+        FigureDto figureDto = new FigureDto();
+        figureDto.setColor(figure.getColor());
+        figureDto.setCoordX(figure.getCoordX());
+        figureDto.setCoordY(figure.getCoordY());
+        figureDto.setFigureType(figure.getFigureType());
 
-        //TODO fill the DTO
+        return figureDto;
+    }
+
+    private UserDto userDtoMapper(User user) {
+        UserDto userDto = new UserDto();
+        userDto.setFullName(user.getFullname());
+        userDto.setId(user.getId());
+        userDto.setRole(user.getRoles().toString());
+
+        return userDto;
+    }
+
+
+    public ValidMovesDto giveValidMoves(long chessGameId) {
+        //TODO user validáció
+        ChessGame chessGame = chessGameRepository.findById(chessGameId)
+                .orElseThrow(() -> new NotFoundException("ChessGame id is not valid"));
+        ValidMovesDto validMovesDto = new ValidMovesDto();
+        validMovesDto.setChessGameId(chessGameId);
+        Set<CoordinateDto> coordinateDtos = new HashSet<>();
+
+        ChessTable chessTable = tableBuilderService.buildTable(chessGameId);
+
+        for (Figure figure : filterFigureByColor(chessGame, chessTable)) {
+            Set<ValidMove> validMoves = validMoveInspector
+                    .allValidMoves(chessTable, new Coordinate(figure.getCoordX(), figure.getCoordY()));
+            Set<ValidMove> legalMoves = validMoves.stream()
+                    .filter(vm -> moveValidator.validmove(chessTable,
+                            setChessMoveDto(chessGameId, chessTable, figure, vm)) != null)
+                    .collect(Collectors.toSet());
+            legalMoves
+                    .forEach(lm -> coordinateDtos.add(coordinateDtoMapper(lm, figure)));
+        }
+
+        validMovesDto.setValidMoves(coordinateDtos);
 
         return validMovesDto;
+    }
+
+    private CoordinateDto coordinateDtoMapper(ValidMove lm, Figure figure) {
+        CoordinateDto coordinateDto = new CoordinateDto();
+
+        coordinateDto.setFromX(figure.getCoordX());
+        coordinateDto.setFromY(figure.getCoordY());
+        coordinateDto.setToX(lm.getCoordinate().getX());
+        coordinateDto.setToY(lm.getCoordinate().getY());
+
+        return coordinateDto;
+    }
+
+    private ChessMoveDto setChessMoveDto(long chessGameId, ChessTable chessTable, Figure figure, ValidMove vm) {
+        ChessMoveDto chessMoveDto = new ChessMoveDto();
+        chessMoveDto.setGameId(chessGameId);
+        chessMoveDto.setMoveFromX(figure.getCoordX());
+        chessMoveDto.setMoveFromY(figure.getCoordY());
+        chessMoveDto.setMoveToX(vm.getCoordinate().getX());
+        chessMoveDto.setMoveToY(vm.getCoordinate().getY());
+        chessMoveDto.setMoveId(chessTable.getActualMoveNumber());
+        return chessMoveDto;
+    }
+
+    private Set<Figure> filterFigureByColor(ChessGame chessGame, ChessTable chessTable) {
+        return chessTable.getFigures()
+                .stream()
+                .filter(figure -> figure.getColor().equals(chessGame.getNextMove()))
+                .collect(Collectors.toSet());
     }
 }

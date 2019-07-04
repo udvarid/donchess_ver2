@@ -40,7 +40,7 @@ public class ChessGame {
 
     private int lastMoveId;
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ChessMove> chessMoves = new ArrayList<>();
 
     //TODO később bevezetni az időperiódust és számon tartani, az egyes felhasználók rendelkezésre álló idejét

@@ -13,10 +13,10 @@ import java.util.Set;
 @Service
 public class ChessAndMateJudge {
 
-    private MoveValidator moveValidator;
+    private ValidMoveInspector validMoveInspector;
 
-    public ChessAndMateJudge(MoveValidator moveValidator) {
-        this.moveValidator = moveValidator;
+    public ChessAndMateJudge(ValidMoveInspector validMoveInspector) {
+        this.validMoveInspector = validMoveInspector;
     }
 
     public boolean inChessSituation(ChessTable chessTableForCheck) {
@@ -25,7 +25,7 @@ public class ChessAndMateJudge {
 
         for (Figure figure : chessTableForCheck.getFigures()) {
             if (figure.getColor().equals(chessTableForCheck.getWhoIsNext())) {
-                Set<ValidMove> validMoves = moveValidator.allValidMoves(chessTableForCheck,
+                Set<ValidMove> validMoves = validMoveInspector.allValidMoves(chessTableForCheck,
                         new Coordinate(figure.getCoordX(), figure.getCoordY()));
 
                 for (ValidMove validMove : validMoves) {
