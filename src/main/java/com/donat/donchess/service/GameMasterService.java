@@ -26,7 +26,9 @@ import org.springframework.stereotype.Service;
 import javax.inject.Provider;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -211,9 +213,34 @@ public class GameMasterService {
         return nextMove.equals(Color.WHITE) ? Color.BLACK : Color.WHITE;
     }
 
+    public List<ChessGameDto> findChessgames() {
+        List<ChessGameDto> chessGameDtos = new ArrayList<>();
+
+        List<ChessGame> chessGames = chessGameRepository
+                .findAll()
+                .stream()
+                .filter(game -> game.getChessGameStatus().equals(ChessGameStatus.OPEN))
+                .collect(Collectors.toList());
+
+        for (ChessGame chessGame : chessGames) {
+            ChessGameDto chessGameDto = new ChessGameDto();
+            chessGameDto.setChessGameId(chessGame.getId());
+            chessGameDto.setChessGameStatus(chessGame.getChessGameStatus());
+            chessGameDto.setChessGameType(chessGame.getChessGameType());
+            chessGameDto.setLastMoveId(chessGame.getLastMoveId());
+            chessGameDto.setNextMove(chessGame.getNextMove());
+            chessGameDto.setResult(chessGame.getResult());
+            chessGameDto.setUserOne(userDtoMapper(chessGame.getUserOne()));
+            chessGameDto.setUserTwo(userDtoMapper(chessGame.getUserTwo()));
+
+            chessGameDtos.add(chessGameDto);
+        }
+
+        return chessGameDtos;
+    }
+
 
     public ChessTableDto giveChessTable(long chessGameId) {
-        //TODO user validáció
         ChessTableDto chessTableDto = new ChessTableDto();
         JPAQueryFactory query = new JPAQueryFactory(entityManager);
 
@@ -255,14 +282,12 @@ public class GameMasterService {
         UserDto userDto = new UserDto();
         userDto.setFullName(user.getFullname());
         userDto.setId(user.getId());
-        userDto.setRole(user.getRoles().toString());
 
         return userDto;
     }
 
 
     public ValidMovesDto giveValidMoves(long chessGameId) {
-        //TODO user validáció
         ChessGame chessGame = chessGameRepository.findById(chessGameId)
                 .orElseThrow(() -> new NotFoundException("ChessGame id is not valid"));
         ValidMovesDto validMovesDto = new ValidMovesDto();
@@ -315,4 +340,5 @@ public class GameMasterService {
                 .filter(figure -> figure.getColor().equals(chessGame.getNextMove()))
                 .collect(Collectors.toSet());
     }
+
 }

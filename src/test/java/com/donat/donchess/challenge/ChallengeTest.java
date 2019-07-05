@@ -1,4 +1,4 @@
-package com.donat.donchess.user;
+package com.donat.donchess.challenge;
 
 import com.donat.donchess.AbstractApiTest;
 import com.donat.donchess.domain.*;
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
-public class challengeTest extends AbstractApiTest {
+public class ChallengeTest extends AbstractApiTest {
 
     @Autowired
     private Provider<EntityManager> entityManager;

@@ -11,11 +11,11 @@ import org.springframework.stereotype.Service;
 import java.util.Set;
 
 @Service
-public class ChessAndMateJudge {
+public class ChessJudge {
 
     private ValidMoveInspector validMoveInspector;
 
-    public ChessAndMateJudge(ValidMoveInspector validMoveInspector) {
+    public ChessJudge(ValidMoveInspector validMoveInspector) {
         this.validMoveInspector = validMoveInspector;
     }
 

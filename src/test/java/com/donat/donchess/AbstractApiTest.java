@@ -21,11 +21,13 @@ public abstract class AbstractApiTest extends AncestorAbstract {
     private static final String BASE_URL = "http://localhost";
     private static final String USER_ENDPOINT = "/api/user";
     private static final String CHALLENGE_ENDPOINT = "/api/challenge";
+    private static final String CHESSGAME_ENDPOINT = "/api/game";
 
 
     protected RestTemplate restTemplate;
     protected UserApiOperation userApi;
     protected ChallengeApiOperation challengeApi;
+    protected GameApiOperation gameApi;
 
     @LocalServerPort
     private int port;
@@ -39,6 +41,7 @@ public abstract class AbstractApiTest extends AncestorAbstract {
         restTemplate = getRestTemplate();
         userApi = new UserApiOperation(restTemplate, getBaseUrl() + USER_ENDPOINT);
         challengeApi = new ChallengeApiOperation(restTemplate, getBaseUrl() + CHALLENGE_ENDPOINT);
+        gameApi = new GameApiOperation(restTemplate, getBaseUrl() + CHESSGAME_ENDPOINT);
     }
 
     protected void loginAsDonat1() {

@@ -15,7 +15,7 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
-public class userTest extends AbstractApiTest {
+public class UserTest extends AbstractApiTest {
 
     public static final String MAIL_FOR_REGISTRATION = "donat.udvari@ponte.hu";
 

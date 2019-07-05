@@ -28,16 +28,16 @@ public class DrawJudge {
     private Provider<EntityManager> entityManager;
 
     private MoveValidator moveValidator;
-    private ChessAndMateJudge chessAndMateJudge;
+    private ChessJudge chessJudge;
     private TableBuilderService tableBuilderService;
     private ValidMoveInspector validMoveInspector;
 
     public DrawJudge(MoveValidator moveValidator,
-                     ChessAndMateJudge chessAndMateJudge,
+                     ChessJudge chessJudge,
                      TableBuilderService tableBuilderService,
                      ValidMoveInspector validMoveInspector) {
         this.moveValidator = moveValidator;
-        this.chessAndMateJudge = chessAndMateJudge;
+        this.chessJudge = chessJudge;
         this.tableBuilderService = tableBuilderService;
         this.validMoveInspector = validMoveInspector;
     }
@@ -124,7 +124,7 @@ public class DrawJudge {
 
                 for (ValidMove validMove : validMoves) {
                     ChessMoveDto chessMoveDto = setMoveDto(chessTable, figure, validMove);
-                    if (!chessAndMateJudge
+                    if (!chessJudge
                             .inChessSituation(moveValidator.cloneTableAndMakeMove(chessTable, chessMoveDto))) {
                         return false;
                     }

@@ -1,4 +1,4 @@
-package com.donat.donchess.user;
+package com.donat.donchess.chessgame;
 
 import com.donat.donchess.AncestorAbstract;
 import com.donat.donchess.domain.ChessGame;
@@ -17,7 +17,7 @@ import java.util.Set;
 
 import static org.junit.Assert.*;
 
-public class chessTableBuilderTest extends AncestorAbstract {
+public class ChessTableBuilderTest extends AncestorAbstract {
 
     @Autowired
     TableBuilderService tableBuilderService;

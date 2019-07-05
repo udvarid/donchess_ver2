@@ -14,12 +14,12 @@ import java.util.Set;
 @Service
 public class MoveValidator {
 
-    private ChessAndMateJudge chessAndMateJudge;
+    private ChessJudge chessJudge;
     private ValidMoveInspector validMoveInspector;
 
-    public MoveValidator(ChessAndMateJudge chessAndMateJudge,
-    ValidMoveInspector  validMoveInspector) {
-        this.chessAndMateJudge = chessAndMateJudge;
+    public MoveValidator(ChessJudge chessJudge,
+                         ValidMoveInspector  validMoveInspector) {
+        this.chessJudge = chessJudge;
         this.validMoveInspector = validMoveInspector;
     }
 
@@ -36,7 +36,7 @@ public class MoveValidator {
                 .findFirst()
                 .orElse(null);
 
-        if (validMove != null && !chessAndMateJudge
+        if (validMove != null && !chessJudge
                 .inChessSituation(cloneTableAndMakeMove(chessTable, chessMoveDto))) {
             return validMove;
         }
