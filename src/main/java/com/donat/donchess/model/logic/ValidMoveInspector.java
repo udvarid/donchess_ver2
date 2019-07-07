@@ -186,7 +186,7 @@ public class ValidMoveInspector {
 
         Coordinate twoStepfw = new Coordinate(figureToMove.getCoordX(), figureToMove.getCoordY() + 2 * mirror);
         figureToCheck = findFigure(chessTable.getFigures(), twoStepfw);
-        if (movingFromStartingPosition(figureToMove)) {
+        if (!figureToMove.isMoved()) {
             validGoalForPawnMovingAndAdd(validMoves, twoStepfw, figureToCheck);
         }
 
@@ -218,11 +218,6 @@ public class ValidMoveInspector {
                 validCoordinate(attack)) {
             validMoves.add(new ValidMove(attack, SpecialMoveType.EN_PASSAN));
         }
-    }
-
-    private boolean movingFromStartingPosition(Figure figureToMove) {
-        return figureToMove.getColor().equals(Color.WHITE) && figureToMove.getCoordY() == 2 ||
-                figureToMove.getColor().equals(Color.BLACK) && figureToMove.getCoordY() == 7;
     }
 
     private void validGoalForPawnMovingAndAdd(Set<ValidMove> validMoves, Coordinate aimCoord, Figure figureToCheck) {
