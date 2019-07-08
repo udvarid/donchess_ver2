@@ -257,15 +257,14 @@ public class ChessTableBuilderTest extends AncestorAbstract {
         chessMove.setMoveToX(5);
         chessMove.setMoveToY(3);
 
-        assertTrue(chessTable.getFigures().contains(figureToKillWithEnPassan));
         tableBuilderService.makeMove(chessTable,chessMove);
-        assertTrue(chessTable.getFigures().contains(figureToKillWithEnPassan));
+        assertEquals(32, chessTable.getFigures().size());
 
-        figureMakeEnPassan.setCoordY(4);
         figureMakeEnPassan.setCoordX(4);
+        figureMakeEnPassan.setCoordY(4);
         chessMove.setSpecialMoveType(SpecialMoveType.EN_PASSAN);
         tableBuilderService.makeMove(chessTable,chessMove);
-        assertFalse(chessTable.getFigures().contains(figureToKillWithEnPassan));
+        assertEquals(31, chessTable.getFigures().size());
     }
 
     @Test

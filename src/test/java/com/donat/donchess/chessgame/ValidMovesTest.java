@@ -32,13 +32,14 @@ public class ValidMovesTest extends AncestorAbstract {
     private User userTwo;
 
     @Autowired
-    UserRepository userRepository;
+    private UserRepository userRepository;
     @Autowired
-    ChessGameRepository chessGameRepository;
+    private ChessGameRepository chessGameRepository;
     @Autowired
-    TableBuilderService tableBuilderService;
+    private TableBuilderService tableBuilderService;
     @Autowired
-    ValidMoveInspector validMoveInspector;
+    private ValidMoveInspector validMoveInspector;
+
 
     @Before
     public void initTableMaker() {
@@ -77,28 +78,28 @@ public class ValidMovesTest extends AncestorAbstract {
         assertTrue(pawnOne.getFigureType().equals(ChessFigure.PAWN));
 
         //Normal moves
-        Set<ValidMove> validMoves = validMoveInspector.allValidMoves(chessTable, getCoordinate(pawnOne));
+        Set<ValidMove> validMoves = giveValidMoves(pawnOne);
         assertEquals(2, validMoves.size());
         assertTrue(validMovesContains(validMoves, new Coordinate(5, 3)));
         assertTrue(validMovesContains(validMoves, new Coordinate(5, 4)));
 
         pawnOne.setMoved(true);
 
-        Set<ValidMove> validMoves2 = validMoveInspector.allValidMoves(chessTable, getCoordinate(pawnOne));
+        Set<ValidMove> validMoves2 = giveValidMoves(pawnOne);
         assertEquals(1, validMoves2.size());
         assertTrue(validMovesContains(validMoves2, new Coordinate(5, 3)));
 
         //Hitting possibilites
         Figure enemyPawn = giveFigure(4, 7);
         enemyPawn.setCoordY(3);
-        Set<ValidMove> validMoves3 = validMoveInspector.allValidMoves(chessTable, getCoordinate(pawnOne));
+        Set<ValidMove> validMoves3 = giveValidMoves(pawnOne);
         assertEquals(2, validMoves3.size());
         assertTrue(validMovesContains(validMoves3, new Coordinate(5, 3)));
         assertTrue(validMovesContains(validMoves3, new Coordinate(4, 3)));
 
         Figure enemyPawn2 = giveFigure(6, 7);
         enemyPawn2.setCoordY(3);
-        Set<ValidMove> validMoves4 = validMoveInspector.allValidMoves(chessTable, getCoordinate(pawnOne));
+        Set<ValidMove> validMoves4 = giveValidMoves(pawnOne);
         assertEquals(3, validMoves4.size());
         assertTrue(validMovesContains(validMoves4, new Coordinate(5, 3)));
         assertTrue(validMovesContains(validMoves4, new Coordinate(4, 3)));
@@ -107,14 +108,14 @@ public class ValidMovesTest extends AncestorAbstract {
         //Blocking
         Figure enemyPawn3 = giveFigure(5, 7);
         enemyPawn3.setCoordY(3);
-        Set<ValidMove> validMoves5 = validMoveInspector.allValidMoves(chessTable, getCoordinate(pawnOne));
+        Set<ValidMove> validMoves5 = giveValidMoves(pawnOne);
         assertEquals(2, validMoves5.size());
         assertTrue(validMovesContains(validMoves5, new Coordinate(4, 3)));
         assertTrue(validMovesContains(validMoves5, new Coordinate(6, 3)));
 
         //ownFigure in hitting poisition
         enemyPawn2.setColor(Color.WHITE);
-        Set<ValidMove> validMoves6 = validMoveInspector.allValidMoves(chessTable, getCoordinate(pawnOne));
+        Set<ValidMove> validMoves6 = giveValidMoves(pawnOne);
         assertEquals(1, validMoves6.size());
         assertTrue(validMovesContains(validMoves6, new Coordinate(4, 3)));
 
@@ -123,68 +124,140 @@ public class ValidMovesTest extends AncestorAbstract {
 
     @Test
     public void validMovesOfRookTest() {
+        Figure rook = giveFigure(1, 1);
+        assertTrue(rook.getFigureType().equals(ChessFigure.ROOK));
+        Set<ValidMove> validMoves = giveValidMoves(rook);
+        assertEquals(0, validMoves.size());
 
+        killFigure(1, 2);
+        Set<ValidMove> validMoves2 = giveValidMoves(rook);
+        assertEquals(6, validMoves2.size());
+        for (int i = 2; i <= 7; i++) {
+            assertTrue(validMovesContains(validMoves2, new Coordinate(1, i)));
+        }
+
+        Figure myQueen = giveFigure(4, 1);
+        assertTrue(myQueen.getFigureType().equals(ChessFigure.QUEEN));
+        myQueen.setCoordX(1);
+        myQueen.setCoordY(5);
+        Set<ValidMove> validMoves3 = giveValidMoves(rook);
+        assertEquals(3, validMoves3.size());
+        for (int i = 2; i <= 4; i++) {
+            assertTrue(validMovesContains(validMoves3, new Coordinate(1, i)));
+        }
+
+        assertTrue(myQueen.getColor().equals(Color.WHITE));
+        myQueen.setColor(Color.BLACK);
+        Set<ValidMove> validMoves4 = giveValidMoves(rook);
+        assertEquals(4, validMoves4.size());
+        for (int i = 2; i <= 5; i++) {
+            assertTrue(validMovesContains(validMoves4, new Coordinate(1, i)));
+        }
+
+        rook.setCoordY(6);
+        rook.setCoordX(5);
+        Set<ValidMove> validMoves5 = giveValidMoves(rook);
+        assertEquals(11, validMoves5.size());
     }
+
     @Test
     public void validMovesOfKnightTest() {
+        Figure knight = giveFigure(2, 1);
+        assertTrue(knight.getFigureType().equals(ChessFigure.KNIGHT));
+        Set<ValidMove> validMoves = giveValidMoves(knight);
+        assertEquals(2, validMoves.size());
+        assertTrue(validMovesContains(validMoves, new Coordinate(1, 3)));
+        assertTrue(validMovesContains(validMoves, new Coordinate(3, 3)));
 
+        knight.setCoordX(4);
+        knight.setCoordY(4);
+        Set<ValidMove> validMoves2 = giveValidMoves(knight);
+        assertEquals(6, validMoves2.size());
+        assertTrue(validMovesContains(validMoves2, new Coordinate(2, 3)));
+        assertTrue(validMovesContains(validMoves2, new Coordinate(6, 3)));
+        assertTrue(validMovesContains(validMoves2, new Coordinate(2, 5)));
+        assertTrue(validMovesContains(validMoves2, new Coordinate(6, 5)));
+        assertTrue(validMovesContains(validMoves2, new Coordinate(3, 6)));
+        assertTrue(validMovesContains(validMoves2, new Coordinate(5, 6)));
+
+        Figure myPawnToChangeColor = giveFigure(3, 2);
+        assertTrue(myPawnToChangeColor.getColor().equals(Color.WHITE));
+        myPawnToChangeColor.setColor(Color.BLACK);
+        Set<ValidMove> validMoves3 = giveValidMoves(knight);
+        assertEquals(7, validMoves3.size());
+        assertTrue(validMovesContains(validMoves3, new Coordinate(3, 2)));
     }
+
     @Test
     public void validMovesOfBishopTest() {
 
     }
+
     @Test
     public void validMovesOfQueenTest() {
 
     }
+
     @Test
     public void validMovesOfKingTest() {
 
     }
+
     @Test
     public void validEnPassanTest() {
 
     }
+
     @Test
     public void validCastlingTest() {
 
     }
+
     @Test
     public void validPromotingTest() {
 
     }
+
     @Test
     public void canNotMoveintoChessTest() {
 
     }
+
     @Test
     public void canNotMoveInChessWithOtherFiguresTest() {
 
     }
+
     @Test
     public void givingChessTest() {
 
     }
+
     @Test
     public void drawFiftyMovesTest() {
 
     }
+
     @Test
     public void drawInsufficientMaterialTest() {
 
     }
+
     @Test
     public void drawNoPossibleMoveTest() {
 
     }
+
     @Test
     public void drawThreeFoldRepetitionTest() {
 
     }
+
     @Test
     public void chessMateTest() {
 
     }
+
     @Test
     public void cloneTableTest() {
 
@@ -204,5 +277,15 @@ public class ValidMovesTest extends AncestorAbstract {
         return validMoveInspector.findFigure(chessTable.getFigures(), new Coordinate(x, y));
     }
 
+    private Set<ValidMove> giveValidMoves(Figure pawnOne) {
+        return validMoveInspector.allValidMoves(chessTable, getCoordinate(pawnOne));
+    }
+
+    private void killFigure(int x, int y) {
+        Figure figureToKill = giveFigure(x, y);
+        if (figureToKill != null) {
+            chessTable.getFigures().remove(figureToKill);
+        }
+    }
 
 }

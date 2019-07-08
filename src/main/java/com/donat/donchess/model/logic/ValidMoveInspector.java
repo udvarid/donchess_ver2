@@ -104,7 +104,7 @@ public class ValidMoveInspector {
             if (jump == 2) {
                 jump = 1;
                 mirrorLeft *= -1;
-                if (i != 5) {
+                if (i != 4) {
                     mirrorRight *= -1;
                 }
             } else {

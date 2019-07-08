@@ -17,10 +17,7 @@ import org.springframework.stereotype.Service;
 import javax.inject.Provider;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Service
 @Transactional
@@ -84,7 +81,7 @@ public class TableBuilderService {
         if (chessMove.getSpecialMoveType().equals(SpecialMoveType.EN_PASSAN)) {
             Figure figureToKillDuringEnPassan =
                     findFigure(chessTable.getFigures(), chessMove.getMoveToX(), chessMove.getMoveFromY());
-            chessTable.getFigures().remove(figureToKillDuringEnPassan);
+            removePawn(chessTable, figureToKillDuringEnPassan);
         }
 
         //castling
@@ -106,6 +103,19 @@ public class TableBuilderService {
         //in case of chess, the moveAlready flag of the King should be set true
         setToMovedTheKingInCaseOfChess(chessTable, chessMove, figureToKill);
 
+    }
+
+    private void removePawn(ChessTable chessTable, Figure figureToKillDuringEnPassan) {
+        Iterator<Figure> iterator = chessTable.getFigures().iterator();
+        while (iterator.hasNext()) {
+            Figure figure = iterator.next();
+            if (figure.getColor().equals(figureToKillDuringEnPassan.getColor()) &&
+                    figure.getFigureType().equals(figureToKillDuringEnPassan.getFigureType()) &&
+                    figure.getCoordX() == figureToKillDuringEnPassan.getCoordX() &&
+                    figure.getCoordY() == figureToKillDuringEnPassan.getCoordY()) {
+                iterator.remove();
+            }
+        }
     }
 
     private void setToMovedTheKingInCaseOfChess(ChessTable chessTable, ChessMove chessMove, Figure figureToKill) {
