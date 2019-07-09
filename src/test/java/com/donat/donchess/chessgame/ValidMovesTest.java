@@ -234,6 +234,60 @@ public class ValidMovesTest extends AncestorAbstract {
 
     @Test
     public void validMovesOfQueenTest() {
+        Figure queen = giveFigure(4, 1);
+        assertTrue(queen.getFigureType().equals(ChessFigure.QUEEN));
+        Set<ValidMove> validMoves = giveValidMoves(queen);
+        assertEquals(0, validMoves.size());
+
+        killFigure(4, 2);
+        Set<ValidMove> validMoves2 = giveValidMoves(queen);
+        assertEquals(6, validMoves2.size());
+        for (int i = 1; i <= 6; i++) {
+            assertTrue(validMovesContains(validMoves2, new Coordinate(4, 1 + i)));
+        }
+
+        killFigure(5, 2);
+        killFigure(3, 2);
+        Set<ValidMove> validMoves3 = giveValidMoves(queen);
+        assertEquals(13, validMoves3.size());
+        for (int i = 1; i <= 6; i++) {
+            assertTrue(validMovesContains(validMoves3, new Coordinate(4, 1 + i)));
+        }
+        for (int i = 1; i <= 3; i++) {
+            assertTrue(validMovesContains(validMoves3, new Coordinate(4 - i, 1 + i)));
+        }
+        for (int i = 1; i <= 4; i++) {
+            assertTrue(validMovesContains(validMoves3, new Coordinate(4 + i, 1 + i)));
+        }
+
+        Figure pawn = giveFigure(4, 7);
+        assertTrue(pawn.getColor().equals(Color.BLACK));
+        assertTrue(pawn.getFigureType().equals(ChessFigure.PAWN));
+        pawn.setCoordY(3);
+        Set<ValidMove> validMoves4 = giveValidMoves(queen);
+        assertEquals(9, validMoves4.size());
+        for (int i = 1; i <= 2; i++) {
+            assertTrue(validMovesContains(validMoves4, new Coordinate(4, 1 + i)));
+        }
+        for (int i = 1; i <= 3; i++) {
+            assertTrue(validMovesContains(validMoves4, new Coordinate(4 - i, 1 + i)));
+        }
+        for (int i = 1; i <= 4; i++) {
+            assertTrue(validMovesContains(validMoves4, new Coordinate(4 + i, 1 + i)));
+        }
+
+        pawn.setColor(Color.WHITE);
+        Set<ValidMove> validMoves5 = giveValidMoves(queen);
+        assertEquals(8, validMoves5.size());
+        for (int i = 1; i <= 1; i++) {
+            assertTrue(validMovesContains(validMoves5, new Coordinate(4, 1 + i)));
+        }
+        for (int i = 1; i <= 3; i++) {
+            assertTrue(validMovesContains(validMoves5, new Coordinate(4 - i, 1 + i)));
+        }
+        for (int i = 1; i <= 4; i++) {
+            assertTrue(validMovesContains(validMoves5, new Coordinate(4 + i, 1 + i)));
+        }
 
     }
 
