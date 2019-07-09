@@ -76,6 +76,7 @@ public class Figure {
                 color == figure.color;
     }
 
+
     @Override
     public int hashCode() {
         return Objects.hash(figureType, color, coordX, coordY);

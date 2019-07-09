@@ -18,6 +18,7 @@ import javax.inject.Provider;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -81,7 +82,9 @@ public class TableBuilderService {
         if (chessMove.getSpecialMoveType().equals(SpecialMoveType.EN_PASSAN)) {
             Figure figureToKillDuringEnPassan =
                     findFigure(chessTable.getFigures(), chessMove.getMoveToX(), chessMove.getMoveFromY());
+
             removePawn(chessTable, figureToKillDuringEnPassan);
+
         }
 
         //castling

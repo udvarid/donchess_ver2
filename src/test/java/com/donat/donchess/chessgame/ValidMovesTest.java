@@ -190,7 +190,46 @@ public class ValidMovesTest extends AncestorAbstract {
 
     @Test
     public void validMovesOfBishopTest() {
+        Figure bishop = giveFigure(3, 1);
+        assertTrue(bishop.getFigureType().equals(ChessFigure.BISHOP));
+        Set<ValidMove> validMoves = giveValidMoves(bishop);
+        assertEquals(0, validMoves.size());
 
+        killFigure(4, 2);
+        Set<ValidMove> validMoves2 = giveValidMoves(bishop);
+        assertEquals(5, validMoves2.size());
+        assertTrue(validMovesContains(validMoves2, new Coordinate(4, 2)));
+        assertTrue(validMovesContains(validMoves2, new Coordinate(5, 3)));
+        assertTrue(validMovesContains(validMoves2, new Coordinate(6, 4)));
+        assertTrue(validMovesContains(validMoves2, new Coordinate(7, 5)));
+        assertTrue(validMovesContains(validMoves2, new Coordinate(8, 6)));
+
+        killFigure(2, 2);
+        Set<ValidMove> validMoves3 = giveValidMoves(bishop);
+        assertEquals(7, validMoves3.size());
+        assertTrue(validMovesContains(validMoves3, new Coordinate(2, 2)));
+        assertTrue(validMovesContains(validMoves3, new Coordinate(1, 3)));
+
+        Figure pawn = giveFigure(3, 2);
+        assertTrue(pawn.getColor().equals(Color.WHITE));
+        assertTrue(pawn.getFigureType().equals(ChessFigure.PAWN));
+        pawn.setCoordX(6);
+        pawn.setCoordY(4);
+        Set<ValidMove> validMoves4 = giveValidMoves(bishop);
+        assertEquals(4, validMoves4.size());
+        assertTrue(validMovesContains(validMoves4, new Coordinate(2, 2)));
+        assertTrue(validMovesContains(validMoves4, new Coordinate(1, 3)));
+        assertTrue(validMovesContains(validMoves4, new Coordinate(4, 2)));
+        assertTrue(validMovesContains(validMoves4, new Coordinate(5, 3)));
+
+        pawn.setColor(Color.BLACK);
+        Set<ValidMove> validMoves5 = giveValidMoves(bishop);
+        assertEquals(5, validMoves5.size());
+        assertTrue(validMovesContains(validMoves5, new Coordinate(2, 2)));
+        assertTrue(validMovesContains(validMoves5, new Coordinate(1, 3)));
+        assertTrue(validMovesContains(validMoves5, new Coordinate(4, 2)));
+        assertTrue(validMovesContains(validMoves5, new Coordinate(5, 3)));
+        assertTrue(validMovesContains(validMoves5, new Coordinate(6, 4)));
     }
 
     @Test
