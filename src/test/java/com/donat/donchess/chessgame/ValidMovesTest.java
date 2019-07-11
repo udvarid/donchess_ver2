@@ -163,7 +163,7 @@ public class ValidMovesTest extends AncestorAbstract {
     @Test
     public void validMovesOfKnightTest() {
         Figure knight = giveFigure(2, 1);
-        assertTrue(knight.getFigureType().equals(ChessFigure.KNIGHT));
+        assertEquals(knight.getFigureType(), ChessFigure.KNIGHT);
         Set<ValidMove> validMoves = giveValidMoves(knight);
         assertEquals(2, validMoves.size());
         assertTrue(validMovesContains(validMoves, new Coordinate(1, 3)));
@@ -211,8 +211,8 @@ public class ValidMovesTest extends AncestorAbstract {
         assertTrue(validMovesContains(validMoves3, new Coordinate(1, 3)));
 
         Figure pawn = giveFigure(3, 2);
-        assertTrue(pawn.getColor().equals(Color.WHITE));
-        assertTrue(pawn.getFigureType().equals(ChessFigure.PAWN));
+        assertEquals(pawn.getColor(), Color.WHITE);
+        assertEquals(pawn.getFigureType(), ChessFigure.PAWN);
         pawn.setCoordX(6);
         pawn.setCoordY(4);
         Set<ValidMove> validMoves4 = giveValidMoves(bishop);
@@ -261,8 +261,8 @@ public class ValidMovesTest extends AncestorAbstract {
         }
 
         Figure pawn = giveFigure(4, 7);
-        assertTrue(pawn.getColor().equals(Color.BLACK));
-        assertTrue(pawn.getFigureType().equals(ChessFigure.PAWN));
+        assertEquals(pawn.getColor(), Color.BLACK);
+        assertEquals(pawn.getFigureType(), ChessFigure.PAWN);
         pawn.setCoordY(3);
         Set<ValidMove> validMoves4 = giveValidMoves(queen);
         assertEquals(9, validMoves4.size());
@@ -293,6 +293,28 @@ public class ValidMovesTest extends AncestorAbstract {
 
     @Test
     public void validMovesOfKingTest() {
+        Figure king = giveFigure(5, 1);
+        assertEquals(king.getFigureType(), ChessFigure.KING);
+        Set<ValidMove> validMoves = giveValidMoves(king);
+        assertEquals(0, validMoves.size());
+
+        killFigure(5, 2);
+        killFigure(6, 1);
+        Set<ValidMove> validMoves2 = giveValidMoves(king);
+        assertEquals(2, validMoves2.size());
+        assertTrue(validMovesContains(validMoves2, new Coordinate(5, 2)));
+        assertTrue(validMovesContains(validMoves2, new Coordinate(6, 1)));
+
+        Figure pawn = giveFigure(6, 2);
+        assertEquals(pawn.getColor(), Color.WHITE);
+        assertEquals(pawn.getFigureType(), ChessFigure.PAWN);
+        pawn.setColor(Color.BLACK);
+        Set<ValidMove> validMoves3 = giveValidMoves(king);
+        assertEquals(3, validMoves3.size());
+        assertTrue(validMovesContains(validMoves3, new Coordinate(5, 2)));
+        assertTrue(validMovesContains(validMoves3, new Coordinate(6, 1)));
+        assertTrue(validMovesContains(validMoves3, new Coordinate(6, 2)));
+
 
     }
 
