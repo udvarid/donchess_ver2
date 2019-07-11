@@ -265,6 +265,7 @@ public class ChessTableBuilderTest extends AncestorAbstract {
         chessMove.setSpecialMoveType(SpecialMoveType.EN_PASSAN);
         tableBuilderService.makeMove(chessTable,chessMove);
         assertEquals(31, chessTable.getFigures().size());
+        assertTrue(!chessTable.getFigures().contains(figureToKillWithEnPassan));
     }
 
     @Test

@@ -15,6 +15,10 @@ public class Figure {
 
     private int coordY;
 
+    private int initCoordX;
+
+    private int initCoordY;
+
     private boolean moved;
 
     public Figure(ChessFigure figureType, Color color, int coordX, int coordY) {
@@ -23,6 +27,8 @@ public class Figure {
         this.coordX = coordX;
         this.coordY = coordY;
         this.moved = false;
+        this.initCoordX = coordX;
+        this.initCoordY = coordY;
     }
 
     public ChessFigure getFigureType() {
@@ -79,6 +85,6 @@ public class Figure {
 
     @Override
     public int hashCode() {
-        return Objects.hash(figureType, color, coordX, coordY);
+        return Objects.hash(initCoordX,initCoordY);
     }
 }

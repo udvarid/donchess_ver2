@@ -83,7 +83,7 @@ public class TableBuilderService {
             Figure figureToKillDuringEnPassan =
                     findFigure(chessTable.getFigures(), chessMove.getMoveToX(), chessMove.getMoveFromY());
 
-            removePawn(chessTable, figureToKillDuringEnPassan);
+            chessTable.getFigures().remove(figureToKillDuringEnPassan);
 
         }
 
