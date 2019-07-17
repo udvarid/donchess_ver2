@@ -68,8 +68,8 @@ public class MoveValidator {
         if (figureToKill != null) {
             cloneChessTable.getFigures().remove(figureToKill);
         }
-        figureToMove.setCoordX(chessMoveDto.getMoveFromX());
-        figureToMove.setCoordY(chessMoveDto.getMoveFromY());
+        figureToMove.setCoordX(chessMoveDto.getMoveToX());
+        figureToMove.setCoordY(chessMoveDto.getMoveToY());
         figureToMove.setMoved(true);
         cloneChessTable.setLastMoveWasDoublePawn(false);
 
