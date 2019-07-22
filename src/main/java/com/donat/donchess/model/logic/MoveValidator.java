@@ -1,5 +1,6 @@
 package com.donat.donchess.model.logic;
 
+import com.donat.donchess.domain.enums.SpecialMoveType;
 import com.donat.donchess.dto.chessGame.ChessMoveDto;
 import com.donat.donchess.model.enums.ChessFigure;
 import com.donat.donchess.model.enums.Color;
@@ -18,7 +19,7 @@ public class MoveValidator {
     private ValidMoveInspector validMoveInspector;
 
     public MoveValidator(ChessJudge chessJudge,
-                         ValidMoveInspector  validMoveInspector) {
+                         ValidMoveInspector validMoveInspector) {
         this.chessJudge = chessJudge;
         this.validMoveInspector = validMoveInspector;
     }
@@ -36,13 +37,35 @@ public class MoveValidator {
                 .findFirst()
                 .orElse(null);
 
-        if (validMove != null && !chessJudge
-                .inChessSituation(cloneTableAndMakeMove(chessTable, chessMoveDto))) {
-            return validMove;
+        boolean answer = false;
+        if (validMove != null) {
+            if (!chessJudge.inChessSituation(cloneTableAndMakeMove(chessTable, chessMoveDto))) {
+                answer = true;
+            }
+            if (validMove.getSpecialMoveType().equals(SpecialMoveType.CASTLING)) {
+                ChessMoveDto modifiedChessMoveDto = makeMoveDtoToFullyValidateCastlingMove(chessMoveDto);
+                if (chessJudge.inChessSituation(cloneTableAndMakeMove(chessTable, modifiedChessMoveDto))) {
+                    answer = false;
+                }
+
+            }
+
         }
 
-        return null;
+        return answer ? validMove : null;
 
+    }
+
+    private ChessMoveDto makeMoveDtoToFullyValidateCastlingMove(ChessMoveDto chessMoveDto) {
+        ChessMoveDto modifiedChessMoveDto = new ChessMoveDto();
+        modifiedChessMoveDto.setGameId(chessMoveDto.getGameId());
+        modifiedChessMoveDto.setMoveId(chessMoveDto.getMoveId());
+        modifiedChessMoveDto.setMoveFromX(chessMoveDto.getMoveFromX());
+        modifiedChessMoveDto.setMoveFromY(chessMoveDto.getMoveFromY());
+        modifiedChessMoveDto.setMoveToY(chessMoveDto.getMoveToY());
+        modifiedChessMoveDto.setMoveToX(chessMoveDto.getMoveFromX() +
+                (chessMoveDto.getMoveToX() - chessMoveDto.getMoveFromX()) / 2);
+        return modifiedChessMoveDto;
     }
 
     public ChessTable cloneTableAndMakeMove(ChessTable chessTable, ChessMoveDto chessMoveDto) {
@@ -58,6 +81,8 @@ public class MoveValidator {
 
         cloneChessTable
                 .setWhoIsNext(chessTable.getWhoIsNext().equals(Color.WHITE) ? Color.BLACK : Color.WHITE);
+
+        cloneChessTable.setChessGameId(chessTable.getChessGameId());
 
 
         Figure figureToMove = validMoveInspector.findFigure(cloneChessTable.getFigures(),

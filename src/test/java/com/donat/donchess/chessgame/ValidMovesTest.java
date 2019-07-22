@@ -6,9 +6,11 @@ import com.donat.donchess.domain.User;
 import com.donat.donchess.domain.enums.ChessGameStatus;
 import com.donat.donchess.domain.enums.ChessGameType;
 import com.donat.donchess.domain.enums.Result;
+import com.donat.donchess.domain.enums.SpecialMoveType;
 import com.donat.donchess.dto.chessGame.ChessMoveDto;
 import com.donat.donchess.model.enums.ChessFigure;
 import com.donat.donchess.model.enums.Color;
+import com.donat.donchess.model.logic.DrawJudge;
 import com.donat.donchess.model.logic.MoveValidator;
 import com.donat.donchess.model.logic.ValidMoveInspector;
 import com.donat.donchess.model.objects.ChessTable;
@@ -22,6 +24,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.Iterator;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -44,6 +47,8 @@ public class ValidMovesTest extends AncestorAbstract {
     private ValidMoveInspector validMoveInspector;
     @Autowired
     private MoveValidator moveValidator;
+    @Autowired
+    private DrawJudge drawJudge;
 
 
     @Before
@@ -394,6 +399,41 @@ public class ValidMovesTest extends AncestorAbstract {
         assertTrue(validMovesContains(validMoves5, new Coordinate(4, 1)));
     }
 
+    @Test
+    public void canNotMakeCastlingIfCellsInTheWayUnderAttackTest() {
+        Figure king = giveFigure(5, 1);
+        assertTrue(king.getColor().equals(Color.WHITE));
+        assertTrue(king.getFigureType().equals(ChessFigure.KING));
+
+        killFigure(6, 1);
+        killFigure(7, 1);
+        killFigure(6, 2);
+        killFigure(7, 2);
+        Set<ValidMove> validMoves = giveValidMoves(king);
+        assertTrue(validMovesContains(validMoves, new Coordinate(6, 1)));
+        assertTrue(validMovesContains(validMoves, new Coordinate(7, 1)));
+
+        for (ValidMove validMove : validMoves) {
+            if (validMove.getCoordinate().equals(new Coordinate(7, 1))) {
+                assertEquals(validMove.getSpecialMoveType(), SpecialMoveType.CASTLING);
+            }
+        }
+
+        Figure enemyRook = giveFigure(1, 8);
+        assertTrue(enemyRook.getColor().equals(Color.BLACK));
+        assertTrue(enemyRook.getFigureType().equals(ChessFigure.ROOK));
+
+        enemyRook.setCoordX(6);
+        enemyRook.setCoordY(6);
+        Set<ValidMove> validMoves2 = giveValidMoves(king);
+        assertNull(tryToMove(6, 1, king));
+        assertNull(tryToMove(6, 2, king));
+        assertNull(tryToMove(7, 1, king));
+        assertEquals(0, giveMoveable(validMoves2, king));
+
+
+    }
+
 
     @Test
     public void canNotMoveintoChessTest() {
@@ -499,45 +539,172 @@ public class ValidMovesTest extends AncestorAbstract {
     }
 
     @Test
-    public void givingChessTest() {
+    public void cloneTableTest() {
+        ChessMoveDto chessMoveDto = new ChessMoveDto();
+        chessMoveDto.setMoveId(chessGame.getLastMoveId());
+        chessMoveDto.setGameId(chessGame.getId());
+        chessMoveDto.setMoveFromX(5);
+        chessMoveDto.setMoveFromY(2);
+        chessMoveDto.setMoveToX(5);
+        chessMoveDto.setMoveToY(4);
+        ChessTable chessTableCloned = moveValidator.cloneTableAndMakeMove(this.chessTable, chessMoveDto);
 
-    }
+        assertEquals(chessTable.getFigures().size(), chessTableCloned.getFigures().size());
+        assertEquals(chessTable.getChessGameId(), chessTableCloned.getChessGameId());
+        assertNotEquals(chessTable.getWhoIsNext(), chessTableCloned.getWhoIsNext());
+        assertNotEquals(chessTable, chessTableCloned);
 
-    @Test
-    public void validPromotingTest() {
-
-
+        for (Figure figure : chessTable.getFigures()) {
+            assertTrue(figureIsOnStartingCell(figure));
+        }
+        for (Figure figure : chessTableCloned.getFigures()) {
+            if (figure.getInitCoordX() == 5 && figure.getInitCoordY() == 2) {
+                assertFalse(figureIsOnStartingCell(figure));
+                assertTrue(figure.getCoordX() == 5 && figure.getCoordY() == 4);
+            } else {
+                assertTrue(figureIsOnStartingCell(figure));
+            }
+        }
     }
 
 
     @Test
     public void drawFiftyMovesTest() {
+        int lengthOfPassivity = Math.min(chessTable.getActualMoveNumber() - chessTable.getLastHitMoveNumber(),
+                chessTable.getActualMoveNumber() - chessTable.getLastPawnMoveNumber());
+        assertTrue(lengthOfPassivity < 50);
+        assertFalse(drawJudge.fiftyMoveRule(chessTable));
+
+        chessTable.setActualMoveNumber(75);
+        chessTable.setLastHitMoveNumber(22);
+        chessTable.setLastPawnMoveNumber(23);
+        lengthOfPassivity = Math.min(chessTable.getActualMoveNumber() - chessTable.getLastHitMoveNumber(),
+                chessTable.getActualMoveNumber() - chessTable.getLastPawnMoveNumber());
+        assertFalse(lengthOfPassivity < 50);
+        assertTrue(drawJudge.fiftyMoveRule(chessTable));
+
+
+        chessTable.setActualMoveNumber(75);
+        chessTable.setLastHitMoveNumber(26);
+        chessTable.setLastPawnMoveNumber(23);
+        lengthOfPassivity = Math.min(chessTable.getActualMoveNumber() - chessTable.getLastHitMoveNumber(),
+                chessTable.getActualMoveNumber() - chessTable.getLastPawnMoveNumber());
+        assertTrue(lengthOfPassivity < 50);
+        assertFalse(drawJudge.fiftyMoveRule(chessTable));
 
     }
 
     @Test
     public void drawInsufficientMaterialTest() {
 
+        //alap esetben false
+        assertFalse(drawJudge.inSufficientMaterials(chessTable));
+        //leszedünk néhány bábut, de nem eleget, false
+        for (int i = 1; i <= 8; i++) {
+            killFigure(i, 2);
+            killFigure(i, 7);
+            if (i < 5) {
+                killFigure(i, 1);
+                killFigure(i, 8);
+            }
+        }
+        assertEquals(8, chessTable.getFigures().size());
+        assertFalse(drawJudge.inSufficientMaterials(chessTable));
+        //egyiknél csak a király és egy bástya marad, másiknál több - false
+        killFigure(6, 1);
+        killFigure(7, 1);
+        assertFalse(drawJudge.inSufficientMaterials(chessTable));
+        //király és futó, másiknál több - false
+        Figure whiteSecond = giveFigure(8, 1);
+        assertTrue(whiteSecond.getFigureType().equals(ChessFigure.ROOK));
+        assertTrue(whiteSecond.getColor().equals(Color.WHITE));
+        whiteSecond.setFigureType(ChessFigure.BISHOP);
+        assertFalse(drawJudge.inSufficientMaterials(chessTable));
+        //király és futó, másiknál király és bástya - false
+        killFigure(6, 8);
+        killFigure(7, 8);
+        Figure blackSecond = giveFigure(8, 8);
+        assertTrue(blackSecond.getFigureType().equals(ChessFigure.ROOK));
+        assertTrue(blackSecond.getColor().equals(Color.BLACK));
+        assertFalse(drawJudge.inSufficientMaterials(chessTable));
+        //király és futó, másiknál király és gyalog - false
+        blackSecond.setFigureType(ChessFigure.PAWN);
+        assertFalse(drawJudge.inSufficientMaterials(chessTable));
+        //király és futó, másiknál király és futó - true
+        blackSecond.setFigureType(ChessFigure.BISHOP);
+        assertTrue(drawJudge.inSufficientMaterials(chessTable));
+        //király és futó, másiknál király és lovag - true
+        blackSecond.setFigureType(ChessFigure.KNIGHT);
+        assertTrue(drawJudge.inSufficientMaterials(chessTable));
+        //király és futó, másiknál csak király - true
+        killFigure(8, 8);
+        assertTrue(drawJudge.inSufficientMaterials(chessTable));
+
     }
 
     @Test
     public void drawNoPossibleMoveTest() {
 
+        //mindenkit leszedünk a fekete oldaláról, kivéve a királyt
+        Iterator<Figure> iterator = chessTable.getFigures().iterator();
+        while (iterator.hasNext()) {
+            Figure figure = iterator.next();
+            if (!figure.getFigureType().equals(ChessFigure.KING) &&
+                    figure.getColor().equals(Color.BLACK)) {
+                iterator.remove();
+            }
+        }
+
+        assertEquals(17, chessTable.getFigures().size());
+        assertEquals(1, chessTable.getFigures()
+                .stream()
+                .filter(figure -> figure.getColor().equals(Color.BLACK))
+                .count());
+
+        chessTable.setWhoIsNext(Color.BLACK);
+        assertFalse(drawJudge.noPossibleMove(chessTable));
+
+        Figure enemyKing = giveFigure(5, 8);
+        assertTrue(enemyKing.getColor().equals(Color.BLACK));
+        assertTrue(enemyKing.getFigureType().equals(ChessFigure.KING));
+
+        Figure rookOne = giveFigure(1, 1);
+        assertTrue(rookOne.getColor().equals(Color.WHITE));
+        assertTrue(rookOne.getFigureType().equals(ChessFigure.ROOK));
+
+        Figure rookTwo = giveFigure(8, 1);
+        assertTrue(rookTwo.getColor().equals(Color.WHITE));
+        assertTrue(rookTwo.getFigureType().equals(ChessFigure.ROOK));
+
+        enemyKing.setCoordX(8);
+        enemyKing.setMoved(true);
+        rookOne.setCoordY(7);
+        rookTwo.setCoordX(6);
+        rookTwo.setCoordY(3);
+
+        Set<ValidMove> validMoves = giveValidMoves(enemyKing);
+        assertEquals(3, validMoves.size());
+
+        assertEquals(1,giveMoveable(validMoves,enemyKing));
+        assertNotNull(tryToMove(7, 8, enemyKing));
+        assertNull(tryToMove(7, 7, enemyKing));
+        assertNull(tryToMove(8, 7, enemyKing));
+        assertFalse(drawJudge.noPossibleMove(chessTable));
+
+        rookTwo.setCoordX(7);
+        Set<ValidMove> validMoves2 = giveValidMoves(enemyKing);
+
+        assertEquals(0,giveMoveable(validMoves2,enemyKing));
+        assertNull(tryToMove(7, 8, enemyKing));
+        assertNull(tryToMove(7, 7, enemyKing));
+        assertNull(tryToMove(8, 7, enemyKing));
+        assertTrue(drawJudge.noPossibleMove(chessTable));
+
     }
 
-    @Test
-    public void drawThreeFoldRepetitionTest() {
-
-    }
-
-    @Test
-    public void chessMateTest() {
-
-    }
-
-    @Test
-    public void cloneTableTest() {
-
+    private boolean figureIsOnStartingCell(Figure figure) {
+        return figure.getCoordX() == figure.getInitCoordX() &&
+                figure.getCoordY() == figure.getInitCoordY();
     }
 
     private Coordinate getCoordinate(Figure figure) {

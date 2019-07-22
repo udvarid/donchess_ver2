@@ -71,6 +71,14 @@ public class Figure {
         this.moved = moved;
     }
 
+    public int getInitCoordX() {
+        return initCoordX;
+    }
+
+    public int getInitCoordY() {
+        return initCoordY;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

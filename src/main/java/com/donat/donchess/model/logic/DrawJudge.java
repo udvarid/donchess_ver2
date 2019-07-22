@@ -63,7 +63,7 @@ public class DrawJudge {
         return false;
     }
 
-    private boolean threeFoldRepetition(ChessTable chessTable) {
+    public boolean threeFoldRepetition(ChessTable chessTable) {
         JPAQueryFactory query = new JPAQueryFactory(entityManager);
         QChessMove chessMoveFromQ = QChessMove.chessMove;
         QChessGame chessGameFromQ = QChessGame.chessGame;
@@ -99,7 +99,7 @@ public class DrawJudge {
         return false;
     }
 
-    private boolean sameTable(Set<Figure> figuresOne, Set<Figure> figuresTwo) {
+    public boolean sameTable(Set<Figure> figuresOne, Set<Figure> figuresTwo) {
 
         for (Figure figure : figuresOne) {
             if (figuresTwo.stream()
@@ -145,7 +145,7 @@ public class DrawJudge {
         return chessMoveDto;
     }
 
-    private boolean inSufficientMaterials(ChessTable chessTable) {
+    public boolean inSufficientMaterials(ChessTable chessTable) {
         return maxTwoPiecesOfEachSide(chessTable) &&
                 onlyKingOrBishopOrKnightFiguresCanBeFound(chessTable);
     }
@@ -179,7 +179,7 @@ public class DrawJudge {
         return true;
     }
 
-    private boolean fiftyMoveRule(ChessTable chessTable) {
+    public boolean fiftyMoveRule(ChessTable chessTable) {
         return chessTable.getActualMoveNumber() - chessTable.getLastPawnMoveNumber() >= 50 &&
                 chessTable.getActualMoveNumber() - chessTable.getLastHitMoveNumber() >= 50;
     }
