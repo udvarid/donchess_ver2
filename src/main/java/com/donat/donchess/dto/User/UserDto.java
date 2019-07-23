@@ -31,4 +31,11 @@ public class UserDto {
     public void setRole(String role) {
         this.role = role;
     }
+
+    @Override
+    public String toString() {
+        return "UserDto{" +
+                "fullName='" + fullName + '\'' +
+                '}';
+    }
 }

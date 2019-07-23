@@ -49,4 +49,14 @@ public class FigureDto {
     public void setCoordY(int coordY) {
         this.coordY = coordY;
     }
+
+    @Override
+    public String toString() {
+        return "FigureDto{" +
+                "figureType=" + figureType +
+                ", color=" + color +
+                ", coordX=" + coordX +
+                ", coordY=" + coordY +
+                '}';
+    }
 }

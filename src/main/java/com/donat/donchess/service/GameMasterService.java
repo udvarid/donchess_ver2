@@ -26,10 +26,7 @@ import org.springframework.stereotype.Service;
 import javax.inject.Provider;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -113,7 +110,8 @@ public class GameMasterService {
     }
 
     private boolean validPromoteType(ChessMoveDto chessMoveDto) {
-        return chessMoveDto.getPromoteToFigure().isEmpty() ||
+        return chessMoveDto.getPromoteToFigure() == null ||
+                chessMoveDto.getPromoteToFigure().isEmpty() ||
                 EnumUtils.isValidEnum(ChessFigure.class, chessMoveDto.getPromoteToFigure());
     }
 
@@ -157,7 +155,7 @@ public class GameMasterService {
         figure.setCoordX(chessMoveDto.getMoveToX());
         figure.setCoordY(chessMoveDto.getMoveToY());
         figure.setMoved(true);
-        if (!chessMoveDto.getPromoteToFigure().isEmpty()) {
+        if (chessMoveDto.getPromoteToFigure() != null && !chessMoveDto.getPromoteToFigure().isEmpty()) {
             figure.setFigureType(ChessFigure.valueOf(chessMoveDto.getPromoteToFigure()));
         }
     }
@@ -165,7 +163,9 @@ public class GameMasterService {
     private ChessMove createChessMove(ChessGame chessGame, ChessTable chessTable, ChessMoveDto chessMoveDto, ValidMove validMove, Figure figure) {
         ChessMove chessMove = new ChessMove();
         chessMove.setSpecialMoveType(validMove.getSpecialMoveType());
-        chessMove.setPromoteType(ChessFigure.valueOf(chessMoveDto.getPromoteToFigure()));
+        if (chessMoveDto.getPromoteToFigure() != null && !chessMoveDto.getPromoteToFigure().isEmpty()) {
+            chessMove.setPromoteType(ChessFigure.valueOf(chessMoveDto.getPromoteToFigure()));
+        }
         chessMove.setMoveFromX(chessMoveDto.getMoveFromX());
         chessMove.setMoveFromY(chessMoveDto.getMoveFromY());
         chessMove.setMoveToX(chessMoveDto.getMoveToX());

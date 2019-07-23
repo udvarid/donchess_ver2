@@ -26,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Iterator;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
