@@ -91,7 +91,7 @@ public class DrawJudge {
             if (sameTable(chessTableForCompare.getFigures(), chessTable.getFigures())) {
                 numberOfSameTable++;
             }
-            if (numberOfSameTable == 2) {
+            if (numberOfSameTable == 3) {
                 return true;
             }
         }

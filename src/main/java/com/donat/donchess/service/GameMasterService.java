@@ -19,7 +19,6 @@ import com.donat.donchess.model.objects.ValidMove;
 import com.donat.donchess.repository.ChessGameRepository;
 import com.donat.donchess.repository.ChessMoveRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import org.apache.commons.lang3.EnumUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -92,6 +91,8 @@ public class GameMasterService {
 
         if (validMove != null) {
             makeMove(chessGame, chessTable, chessMoveDto, validMove);
+        } else {
+            throw new InvalidException("Not valid move");
         }
     }
 
@@ -110,9 +111,13 @@ public class GameMasterService {
     }
 
     private boolean validPromoteType(ChessMoveDto chessMoveDto) {
-        return chessMoveDto.getPromoteToFigure() == null ||
-                chessMoveDto.getPromoteToFigure().isEmpty() ||
-                EnumUtils.isValidEnum(ChessFigure.class, chessMoveDto.getPromoteToFigure());
+        ChessFigure chessFigure = null;
+        if (chessMoveDto.getPromoteToFigure() != null &&
+                !chessMoveDto.getPromoteToFigure().isEmpty()) {
+            chessFigure = ChessFigure.valueOf(chessMoveDto.getPromoteToFigure());
+        }
+        return chessFigure == null ||
+                !(chessFigure.equals(ChessFigure.PAWN) || chessFigure.equals(ChessFigure.KING));
     }
 
     public void makeMove(ChessGame chessGame, ChessTable chessTable, ChessMoveDto chessMoveDto, ValidMove validMove) {
@@ -166,6 +171,7 @@ public class GameMasterService {
         if (chessMoveDto.getPromoteToFigure() != null && !chessMoveDto.getPromoteToFigure().isEmpty()) {
             chessMove.setPromoteType(ChessFigure.valueOf(chessMoveDto.getPromoteToFigure()));
         }
+        chessMove.setChessGame(chessGame);
         chessMove.setMoveFromX(chessMoveDto.getMoveFromX());
         chessMove.setMoveFromY(chessMoveDto.getMoveFromY());
         chessMove.setMoveToX(chessMoveDto.getMoveToX());

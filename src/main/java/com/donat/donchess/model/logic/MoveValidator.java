@@ -47,7 +47,10 @@ public class MoveValidator {
                 if (chessJudge.inChessSituation(cloneTableAndMakeMove(chessTable, modifiedChessMoveDto))) {
                     answer = false;
                 }
-
+            }
+            if (pawnIsMovingToLastLine(chessTable, chessMoveDto) &&
+                    noPromotingIsSet(chessMoveDto)) {
+                answer = false;
             }
 
         }
@@ -55,6 +58,32 @@ public class MoveValidator {
         return answer ? validMove : null;
 
     }
+
+    private boolean noPromotingIsSet(ChessMoveDto chessMoveDto) {
+        return chessMoveDto.getPromoteToFigure() == null || chessMoveDto.getPromoteToFigure().isEmpty();
+    }
+
+    private boolean pawnIsMovingToLastLine(ChessTable chessTable, ChessMoveDto chessMoveDto) {
+        Figure figure = getFigure(chessTable, chessMoveDto);
+        if (figure != null && figure.getFigureType().equals(ChessFigure.PAWN)) {
+            if (figure.getColor().equals(Color.WHITE) && chessMoveDto.getMoveToY() == 8 ||
+                    figure.getColor().equals(Color.BLACK) && chessMoveDto.getMoveToY() == 1) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private Figure getFigure(ChessTable chessTable, ChessMoveDto chessMoveDto) {
+        for (Figure figure : chessTable.getFigures()) {
+            if (figure.getCoordX() == chessMoveDto.getMoveFromX() &&
+                    figure.getCoordY() == chessMoveDto.getMoveFromY()) {
+                return figure;
+            }
+        }
+        return null;
+    }
+
 
     private ChessMoveDto makeMoveDtoToFullyValidateCastlingMove(ChessMoveDto chessMoveDto) {
         ChessMoveDto modifiedChessMoveDto = new ChessMoveDto();
