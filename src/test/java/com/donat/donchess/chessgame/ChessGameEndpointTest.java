@@ -293,7 +293,7 @@ public class ChessGameEndpointTest extends AbstractApiTest {
 
         //1. step
         loginBasedOnChessGame(chessGame, Color.WHITE);
-        gameApi.chessMove(prepareMove(chessGame, 5, 2, 5, 3, ""));
+        gameApi.chessMove(prepareMove(chessGame, 6, 2, 6, 3, ""));
 
         //2. step
         loginBasedOnChessGame(chessGame, Color.BLACK);
@@ -303,7 +303,7 @@ public class ChessGameEndpointTest extends AbstractApiTest {
         //3. step
         loginBasedOnChessGame(chessGame, Color.WHITE);
         chessGame = gameApi.getOneChessGame(chessGameDto.getChessGameId());
-        gameApi.chessMove(prepareMove(chessGame, 6, 2, 6, 4, ""));
+        gameApi.chessMove(prepareMove(chessGame, 7, 2, 7, 4, ""));
 
         //4. step
         loginBasedOnChessGame(chessGame, Color.BLACK);
@@ -311,6 +311,7 @@ public class ChessGameEndpointTest extends AbstractApiTest {
         assertEquals(chessGame.getChessGameStatus(), ChessGameStatus.OPEN);
         assertEquals(chessGame.getResult(), Result.OPEN);
         gameApi.chessMove(prepareMove(chessGame, 4, 8, 8, 4, ""));
+        chessGame = gameApi.getOneChessGame(chessGameDto.getChessGameId());
         assertEquals(chessGame.getResult(), Result.WON_USER_TWO);
         assertEquals(chessGame.getChessGameStatus(), ChessGameStatus.CLOSED);
 

@@ -104,27 +104,14 @@ public class TableBuilderService {
         }
 
         //in case of chess, the moveAlready flag of the King should be set true
-        setToMovedTheKingInCaseOfChess(chessTable, chessMove, figureToKill);
+        setToMovedTheKingInCaseOfChess(chessTable, chessMove);
 
     }
 
-    private void removePawn(ChessTable chessTable, Figure figureToKillDuringEnPassan) {
-        Iterator<Figure> iterator = chessTable.getFigures().iterator();
-        while (iterator.hasNext()) {
-            Figure figure = iterator.next();
-            if (figure.getColor().equals(figureToKillDuringEnPassan.getColor()) &&
-                    figure.getFigureType().equals(figureToKillDuringEnPassan.getFigureType()) &&
-                    figure.getCoordX() == figureToKillDuringEnPassan.getCoordX() &&
-                    figure.getCoordY() == figureToKillDuringEnPassan.getCoordY()) {
-                iterator.remove();
-            }
-        }
-    }
-
-    private void setToMovedTheKingInCaseOfChess(ChessTable chessTable, ChessMove chessMove, Figure figureToKill) {
+    private void setToMovedTheKingInCaseOfChess(ChessTable chessTable, ChessMove chessMove) {
         if (Objects.equals(Boolean.TRUE, chessMove.isChessGiven())) {
             for (Figure enemyKing : chessTable.getFigures()) {
-                if (!enemyKing.getColor().equals(figureToKill.getColor()) &&
+                if (!enemyKing.getColor().equals(chessTable.getWhoIsNext()) &&
                         enemyKing.getFigureType().equals(ChessFigure.KING)) {
                     enemyKing.setMoved(true);
                     break;
