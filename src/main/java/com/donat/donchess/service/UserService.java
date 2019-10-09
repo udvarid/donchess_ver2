@@ -5,6 +5,7 @@ import com.donat.donchess.domain.Role;
 import com.donat.donchess.domain.User;
 import com.donat.donchess.dto.User.RegisterDto;
 import com.donat.donchess.dto.User.UserDto;
+import com.donat.donchess.dto.User.UserLoginDto;
 import com.donat.donchess.exceptions.InvalidException;
 import com.donat.donchess.repository.RoleRepository;
 import com.donat.donchess.repository.UserRepository;
@@ -12,14 +13,20 @@ import com.donat.donchess.security.UserDetailsImpl;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import net.bytebuddy.utility.RandomString;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.WebAuthenticationDetails;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Provider;
 import javax.persistence.EntityManager;
+import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
 import java.util.HashSet;
 import java.util.List;
@@ -36,6 +43,12 @@ public class UserService implements UserDetailsService {
 
     @Autowired
     private Provider<EntityManager> entityManager;
+
+    @Autowired
+    private UserDetailsService userDetailsService;
+
+    @Autowired
+    private AuthenticationProvider authenticationProvider;
 
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
                        EmailService emailService, RoleRepository roleRepository) {
@@ -127,5 +140,12 @@ public class UserService implements UserDetailsService {
 
         return userDtos;
 
+    }
+
+	public void login(UserLoginDto userLoginDto, HttpServletRequest request) {
+        UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(userLoginDto.getUsername(), userLoginDto.getPassword());
+        authRequest.setDetails(new WebAuthenticationDetails(request));
+        Authentication authentication = this.authenticationProvider.authenticate(authRequest);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 }
