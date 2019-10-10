@@ -148,4 +148,14 @@ public class UserService implements UserDetailsService {
         Authentication authentication = this.authenticationProvider.authenticate(authRequest);
         SecurityContextHolder.getContext().setAuthentication(authentication);
     }
+
+
+    public UserDto getOneUser(String email) {
+        User user = findByEmail(email);
+        UserDto userDto = new UserDto();
+        userDto.setId(user.getId());
+        userDto.setFullName(user.getFullname());
+        userDto.setRole(user.getRoles().toString());
+        return userDto;
+    }
 }

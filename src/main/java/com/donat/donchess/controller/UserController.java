@@ -1,20 +1,22 @@
 package com.donat.donchess.controller;
 
+import java.security.Principal;
+import java.util.Set;
+import javax.servlet.http.HttpServletRequest;
+import javax.transaction.Transactional;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import com.donat.donchess.dto.User.RegisterDto;
 import com.donat.donchess.dto.User.UserDto;
 import com.donat.donchess.dto.User.UserLoginDto;
 import com.donat.donchess.service.UserService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.transaction.Transactional;
-import java.security.Principal;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/user")
@@ -32,6 +34,11 @@ public class UserController {
         return userService.prepareList();
     }
 
+    @GetMapping("/oneUser")
+    public UserDto makeListOfUsers(@RequestParam String email) {
+        return userService.getOneUser(email);
+    }
+
     @PostMapping("/register")
     public ResponseEntity register(@RequestBody RegisterDto registerDto) {
         userService.registerUser(registerDto);
@@ -42,14 +49,6 @@ public class UserController {
     public ResponseEntity confirmation(@RequestParam("token") String token) {
         userService.confirmUserByToken(token);
         return new ResponseEntity(HttpStatus.OK);
-    }
-
-    @GetMapping("/resource")
-    public Map<String,Object> home() {
-        Map<String,Object> model = new HashMap<String,Object>();
-        model.put("id", UUID.randomUUID().toString());
-        model.put("content", "Hello World");
-        return model;
     }
 
     //TODO session rotate és Csrf token bekötése
