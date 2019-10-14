@@ -29,9 +29,15 @@ public class UserController {
         this.userService = userService;
     }
 
+    //TODO mapper használata a DTO-khoz
     @GetMapping("/listOfUsers")
     public Set<UserDto> makeListOfUsers() {
         return userService.prepareList();
+    }
+
+    @GetMapping("/listOfFreeUsers")
+    public Set<UserDto> makeListOfFreeUsers() {
+        return userService.prepareListOfFreeUsers();
     }
 
     @GetMapping("/oneUser")
