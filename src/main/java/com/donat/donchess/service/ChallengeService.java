@@ -66,8 +66,10 @@ public class ChallengeService {
             ChallengeDto challengeDto = new ChallengeDto();
             if (challenge.getChallenged() != null) {
                 challengeDto.setChallengedId(challenge.getChallenged().getId());
+                challengeDto.setChallengedName(challenge.getChallenged().getFullname());
             }
             challengeDto.setChallengerId(challenge.getChallenger().getId());
+            challengeDto.setChallengerName(challenge.getChallenger().getFullname());
             challengeDto.setId(challenge.getId());
             challengeDtos.add(challengeDto);
         });
@@ -165,5 +167,40 @@ public class ChallengeService {
 
     private boolean validActions(ChallengeActionDto challengeActionDto) {
         return EnumUtils.isValidEnum(ChallengeAction.class, challengeActionDto.getChallengeAction());
+    }
+
+    public Set<ChallengeDto> findAllForTheRequester() {
+
+        JPAQueryFactory query = new JPAQueryFactory(entityManager);
+        QChallenge challengeFromQ = QChallenge.challenge;
+
+        User listRequester = securityService.getChallenger();
+        if (listRequester == null) {
+            throw new InvalidException("Not logged in");
+        }
+        Long id = listRequester.getId();
+
+        List<Challenge> challenges = query
+            .selectFrom(challengeFromQ)
+            .where(challengeFromQ.challenged.isNull()
+                .or(challengeFromQ.challenged.id.eq(id))
+                .or(challengeFromQ.challenger.id.eq(id)))
+            .orderBy(challengeFromQ.creatonTime.asc())
+            .fetch();
+        Set<ChallengeDto> challengeDtos = new HashSet<>();
+
+        challenges.forEach(challenge -> {
+            ChallengeDto challengeDto = new ChallengeDto();
+            if (challenge.getChallenged() != null) {
+                challengeDto.setChallengedId(challenge.getChallenged().getId());
+                challengeDto.setChallengedName(challenge.getChallenged().getFullname());
+            }
+            challengeDto.setChallengerId(challenge.getChallenger().getId());
+            challengeDto.setChallengerName(challenge.getChallenger().getFullname());
+            challengeDto.setId(challenge.getId());
+            challengeDtos.add(challengeDto);
+        });
+
+        return challengeDtos;
     }
 }

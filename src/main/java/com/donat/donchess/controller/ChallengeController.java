@@ -25,6 +25,14 @@ public class ChallengeController {
         return challengeService.findAll();
     }
 
+    //TODO Mappert bekapcsolni
+    //TODO entity_ cuccot használni a specificationok miatt
+    @GetMapping("/listForTheRequester")
+    public Set<ChallengeDto> listForTheRequester() {
+        return challengeService.findAllForTheRequester();
+    }
+
+
     @PostMapping("/create")
     public ResponseEntity create(@RequestBody ChallengeCreateDto challengeCreateDto) {
         challengeService.create(challengeCreateDto);

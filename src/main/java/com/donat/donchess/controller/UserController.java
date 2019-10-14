@@ -35,6 +35,7 @@ public class UserController {
         return userService.prepareList();
     }
 
+    //TODO erre tesztet kell írni
     @GetMapping("/listOfFreeUsers")
     public Set<UserDto> makeListOfFreeUsers() {
         return userService.prepareListOfFreeUsers();

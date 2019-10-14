@@ -19,6 +19,7 @@ import com.donat.donchess.security.UserDetailsImpl;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import net.bytebuddy.utility.RandomString;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
