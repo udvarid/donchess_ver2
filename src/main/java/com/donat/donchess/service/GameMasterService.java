@@ -347,4 +347,16 @@ public class GameMasterService {
                 .collect(Collectors.toSet());
     }
 
+	public List<ChessGameDto> findChessgamesForRequester() {
+        User user = securityService.getChallenger();
+
+        if (user == null) {
+            throw new InvalidException("You have to log in");
+        }
+
+        return findChessgames()
+            .stream()
+            .filter(chessGame -> chessGame.getUserOne().getId().equals(user.getId()) || chessGame.getUserTwo().getId().equals(user.getId()))
+            .collect(Collectors.toList());
+	}
 }

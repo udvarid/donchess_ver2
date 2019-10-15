@@ -32,6 +32,12 @@ public class GameController {
         return gameMasterService.findChessgames();
     }
 
+    //TODO teszt
+    //TODO mapper
+    @GetMapping("/list")
+    public List<ChessGameDto> allChessGameForRequester() {
+        return gameMasterService.findChessgamesForRequester();
+    }
 
     @GetMapping("/{id}")
     public ChessTableDto findChessGame(@PathVariable("id") long chessGameId) {

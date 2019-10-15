@@ -34,6 +34,7 @@ public class ChallengeController {
     }
 
 
+    //TODO korlátozni a kihívott nélküli kihívások számát
     @PostMapping("/create")
     public ResponseEntity create(@RequestBody ChallengeCreateDto challengeCreateDto) {
         challengeService.create(challengeCreateDto);

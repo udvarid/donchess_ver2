@@ -112,7 +112,7 @@ public class ChallengeService {
 
     private boolean activeAndSameChallange(Challenge challenge, User challenger, User challenged) {
         return challenge.getChallenger().equals(challenger) &&
-                challenge.getChallenged().equals(challenged);
+                challenge.getChallenged() != null && challenge.getChallenged().equals(challenged);
     }
 
     public void manageAnswer(ChallengeActionDto challengeActionDto) {
