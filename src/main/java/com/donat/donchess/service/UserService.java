@@ -19,7 +19,6 @@ import com.donat.donchess.security.UserDetailsImpl;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import net.bytebuddy.utility.RandomString;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -192,9 +191,9 @@ public class UserService implements UserDetailsService {
 					.findAll(ChallengeSpecifications.challenger(id).and(ChallengeSpecifications.challenged(user.getId()))
 						.or(ChallengeSpecifications.challenged(id).and(ChallengeSpecifications.challenger(id))));
 
-				List<ChessGame> games = chessGameRepository
-					.findAll(ChessGameSpecifications.userOne(id).and(ChessGameSpecifications.userTwo(user.getId()).and(ChessGameSpecifications.openGame())
-						.or(ChessGameSpecifications.userTwo(id).and(ChessGameSpecifications.userOne(user.getId()).and(ChessGameSpecifications.openGame())))));
+				List<ChessGame> games = chessGameRepository.findAll(ChessGameSpecifications.openGame()
+					.and((ChessGameSpecifications.userOne(id).and(ChessGameSpecifications.userTwo(user.getId()))))
+						.or((ChessGameSpecifications.userTwo(id).and(ChessGameSpecifications.userOne(user.getId())))));
 
 				return challenges.isEmpty() && games.isEmpty();
 			})

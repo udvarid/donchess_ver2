@@ -27,6 +27,7 @@ public class ChallengeController {
 
     //TODO Mappert bekapcsolni
     //TODO entity_ cuccot használni a specificationok miatt
+    //TODO teszt
     @GetMapping("/listForTheRequester")
     public Set<ChallengeDto> listForTheRequester() {
         return challengeService.findAllForTheRequester();
