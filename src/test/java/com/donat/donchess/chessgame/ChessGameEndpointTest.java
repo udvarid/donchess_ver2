@@ -186,7 +186,6 @@ public class ChessGameEndpointTest extends AbstractApiTest {
         loginBasedOnChessGame(chessGame, Color.WHITE);
         chessGame = gameApi.getOneChessGame(chessGameDto.getChessGameId());
         ChessTableDto finalChessGame = chessGame;
-        shouldFail(()-> gameApi.chessMove(prepareMove(finalChessGame, 8, 7, 7, 8, "")));
         shouldFail(()-> gameApi.chessMove(prepareMove(finalChessGame, 8, 7, 7, 8, "PAWN")));
         shouldFail(()-> gameApi.chessMove(prepareMove(finalChessGame, 8, 7, 7, 8, "KING")));
         shouldFail(()-> gameApi.chessMove(prepareMove(finalChessGame, 8, 7, 7, 8, "AAAA")));

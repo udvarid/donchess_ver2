@@ -50,7 +50,7 @@ public class MoveValidator {
             }
             if (pawnIsMovingToLastLine(chessTable, chessMoveDto) &&
                     noPromotingIsSet(chessMoveDto)) {
-                answer = false;
+                chessMoveDto.setPromoteToFigure("QUEEN");
             }
 
         }
