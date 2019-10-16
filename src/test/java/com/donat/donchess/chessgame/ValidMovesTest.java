@@ -128,6 +128,16 @@ public class ValidMovesTest extends AncestorAbstract {
         assertEquals(1, validMoves6.size());
         assertTrue(validMovesContains(validMoves6, new Coordinate(4, 3)));
 
+        //testing pawn can move to the last row
+        killFigure(8,7);
+        killFigure(8,8);
+        pawnOne.setCoordX(8);
+        pawnOne.setCoordY(7);
+        Set<ValidMove> validMoves7 = giveValidMoves(pawnOne);
+        assertEquals(2, validMoves7.size());
+        assertTrue(validMovesContains(validMoves7, new Coordinate(7, 8)));
+        assertTrue(validMovesContains(validMoves7, new Coordinate(8, 8)));
+
     }
 
 
