@@ -50,8 +50,6 @@ public class UserService implements UserDetailsService {
 	@Autowired
 	private Provider<EntityManager> entityManager;
 	@Autowired
-	private UserDetailsService userDetailsService;
-	@Autowired
 	private AuthenticationProvider authenticationProvider;
 	@Autowired
 	private ChallengeRepository challengeRepository;
