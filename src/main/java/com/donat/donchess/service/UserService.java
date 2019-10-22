@@ -18,7 +18,6 @@ import com.donat.donchess.repository.UserRepository;
 import com.donat.donchess.security.UserDetailsImpl;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import net.bytebuddy.utility.RandomString;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -46,24 +45,27 @@ public class UserService implements UserDetailsService {
 	private PasswordEncoder passwordEncoder;
 	private EmailService emailService;
 	private RoleRepository roleRepository;
-
-	@Autowired
+	private final SecurityService securityService;
+	private final ChessGameRepository chessGameRepository;
+	private final ChallengeRepository challengeRepository;
+	private final AuthenticationProvider authenticationProvider;
 	private Provider<EntityManager> entityManager;
-	@Autowired
-	private AuthenticationProvider authenticationProvider;
-	@Autowired
-	private ChallengeRepository challengeRepository;
-	@Autowired
-	private ChessGameRepository chessGameRepository;
-	@Autowired
-	private SecurityService securityService;
+
 
 	public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder,
-		EmailService emailService, RoleRepository roleRepository) {
+		EmailService emailService, RoleRepository roleRepository,
+		SecurityService securityService, ChessGameRepository chessGameRepository,
+		ChallengeRepository challengeRepository, AuthenticationProvider authenticationProvider,
+		Provider<EntityManager> entityManager) {
 		this.userRepository = userRepository;
 		this.passwordEncoder = passwordEncoder;
 		this.emailService = emailService;
 		this.roleRepository = roleRepository;
+		this.securityService = securityService;
+		this.chessGameRepository = chessGameRepository;
+		this.challengeRepository = challengeRepository;
+		this.authenticationProvider = authenticationProvider;
+		this.entityManager = entityManager;
 	}
 
 	@Override

@@ -9,8 +9,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Set;
+import javax.transaction.Transactional;
 
 @RestController
+@Transactional
 @RequestMapping("/api/challenge")
 public class ChallengeController {
 

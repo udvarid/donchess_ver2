@@ -21,8 +21,12 @@ import org.springframework.security.web.savedrequest.NullRequestCache;
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-	@Autowired
 	private UserDetailsService userService;
+
+	@Autowired
+	public void setUserService(UserDetailsService userService) {
+		this.userService = userService;
+	}
 
 	@Override
 	@Bean

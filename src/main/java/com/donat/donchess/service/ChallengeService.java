@@ -19,7 +19,6 @@ import com.donat.donchess.repository.ChessGameRepository;
 import com.donat.donchess.repository.UserRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.apache.commons.lang3.EnumUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Provider;
@@ -38,16 +37,17 @@ public class ChallengeService {
     private UserRepository userRepository;
     private SecurityService securityService;
     private ChessGameRepository chessGameRepository;
-
-    @Autowired
     private Provider<EntityManager> entityManager;
 
+
     public ChallengeService(ChallengeRepository challengeRepository, UserRepository userRepository,
-                            SecurityService securityService, ChessGameRepository chessGameRepository) {
+                            SecurityService securityService, ChessGameRepository chessGameRepository,
+        Provider<EntityManager> entityManager) {
         this.challengeRepository = challengeRepository;
         this.userRepository = userRepository;
         this.securityService = securityService;
         this.chessGameRepository = chessGameRepository;
+        this.entityManager = entityManager;
     }
 
     public Set<ChallengeDto> findAll() {

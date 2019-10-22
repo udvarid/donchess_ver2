@@ -7,11 +7,13 @@ import com.donat.donchess.dto.chessGame.ValidMovesDto;
 import com.donat.donchess.service.GameMasterService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
+@Transactional
 @RequestMapping("/api/game")
 public class GameController {
 

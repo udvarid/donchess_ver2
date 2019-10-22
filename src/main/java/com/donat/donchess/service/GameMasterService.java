@@ -19,7 +19,6 @@ import com.donat.donchess.model.objects.ValidMove;
 import com.donat.donchess.repository.ChessGameRepository;
 import com.donat.donchess.repository.ChessMoveRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Provider;
@@ -39,9 +38,8 @@ public class GameMasterService {
     private ChessGameRepository chessGameRepository;
     private ChessMoveRepository chessMoveRepository;
     private ValidMoveInspector validMoveInspector;
-
-    @Autowired
     private Provider<EntityManager> entityManager;
+
 
     public GameMasterService(TableBuilderService tableBuilderService,
                              MoveValidator moveValidator,
@@ -49,7 +47,8 @@ public class GameMasterService {
                              SecurityService securityService,
                              ChessGameRepository chessGameRepository,
                              ChessMoveRepository chessMoveRepository,
-                             ValidMoveInspector validMoveInspector) {
+                             ValidMoveInspector validMoveInspector,
+        Provider<EntityManager> entityManager) {
         this.tableBuilderService = tableBuilderService;
         this.moveValidator = moveValidator;
         this.drawJudge = drawJudge;
@@ -57,6 +56,7 @@ public class GameMasterService {
         this.chessGameRepository = chessGameRepository;
         this.chessMoveRepository = chessMoveRepository;
         this.validMoveInspector = validMoveInspector;
+        this.entityManager = entityManager;
     }
 
     public void handleMove(ChessMoveDto chessMoveDto) {
