@@ -11,6 +11,10 @@ public class EmailService {
 
     @Value("${spring.mail.username}")
     private String MESSAGE_FROM;
+
+    @Value("${spring.mail.registration}")
+    private String registrationAdress;
+
     private JavaMailSender javaMailSender;
 
 
@@ -27,7 +31,7 @@ public class EmailService {
             message.setFrom(MESSAGE_FROM);
             message.setTo(newUser.getEmail());
             message.setSubject("DonChess registration - authentication");
-            message.setText("Dear " + newUser.getFullname() + "! \n \n A registration has been just made with your email. If you did the registration, please confirm it and click here: \n http://localhost:8080/api/user/confirmation?token=" + newUser.getAuthenticationToken());
+            message.setText("Dear " + newUser.getFullname() + "! \n \n A registration has been just made with your email. If you did the registration, please confirm it and click here: \n " + registrationAdress + "/api/user/confirmation?token=" + newUser.getAuthenticationToken());
             javaMailSender.send(message);
         } catch (Exception e) {
             e.printStackTrace();
