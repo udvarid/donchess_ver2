@@ -33,6 +33,7 @@ import java.util.Set;
 @Transactional
 public class ChallengeService {
 
+    public static final int NUMBER_OF_MAXIMUM_OPEN_CHALLENGES = 5;
     private ChallengeRepository challengeRepository;
     private UserRepository userRepository;
     private SecurityService securityService;
@@ -100,6 +101,8 @@ public class ChallengeService {
                     throw new InvalidException("There is a same challenge, challenge id: ", challenge.getId());
                 }
             }
+        } else {
+            verifyOpenChallenges(challenger);
         }
 
         Challenge newChallenge = new Challenge();
@@ -108,6 +111,19 @@ public class ChallengeService {
         newChallenge.setCreatonTime(LocalDateTime.now());
 
         challengeRepository.saveAndFlush(newChallenge);
+    }
+
+    private void verifyOpenChallenges(User challenger) {
+        int numberOfOpenChallenges = 0;
+        for (Challenge challenge : challengeRepository.findAll()) {
+            if (challenge.getChallenged() == null &&
+                challenge.getChallenger().getId() == challenger.getId()) {
+                numberOfOpenChallenges++;
+            }
+        }
+        if (numberOfOpenChallenges >= NUMBER_OF_MAXIMUM_OPEN_CHALLENGES) {
+            throw new InvalidException("The maximum number of open challenge had been alredy reached!");
+        }
     }
 
     private boolean activeAndSameChallange(Challenge challenge, User challenger, User challenged) {

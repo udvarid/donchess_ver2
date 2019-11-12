@@ -35,8 +35,7 @@ public class ChallengeController {
         return challengeService.findAllForTheRequester();
     }
 
-
-    //TODO korlátozni a kihívott nélküli kihívások számát
+    //TODO tesz a maximális nyitott kihívások korlátozására
     @PostMapping("/create")
     public ResponseEntity create(@RequestBody ChallengeCreateDto challengeCreateDto) {
         challengeService.create(challengeCreateDto);
