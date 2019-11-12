@@ -1,5 +1,6 @@
 package com.donat.donchess.controller;
 
+import com.donat.donchess.domain.enums.ChessGameStatus;
 import com.donat.donchess.dto.chessGame.ChessGameDto;
 import com.donat.donchess.dto.chessGame.ChessMoveDto;
 import com.donat.donchess.dto.chessGame.ChessTableDto;
@@ -31,8 +32,16 @@ public class GameController {
 
     @GetMapping
     public List<ChessGameDto> allChessGame() {
-        return gameMasterService.findChessgames();
+        return gameMasterService.findChessgames(false);
     }
+
+    //TODO teszt írás
+    @GetMapping("/giveUp/{id}")
+    public ResponseEntity giveUp(@PathVariable("id") long chessGameId) {
+        gameMasterService.giveUp(chessGameId);
+        return new ResponseEntity(HttpStatus.OK);
+    }
+
 
     //TODO teszt
     //TODO mapper
