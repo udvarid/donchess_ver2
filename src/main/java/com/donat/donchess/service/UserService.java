@@ -36,6 +36,7 @@ import javax.transaction.Transactional;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -189,11 +190,13 @@ public class UserService implements UserDetailsService {
 			.filter(user -> {
 				List<Challenge> challenges = challengeRepository
 					.findAll(ChallengeSpecifications.challenger(id).and(ChallengeSpecifications.challenged(user.getId()))
-						.or(ChallengeSpecifications.challenged(id).and(ChallengeSpecifications.challenger(id))));
+						.or(ChallengeSpecifications.challenged(id).and(ChallengeSpecifications.challenger(user.getId()))));
 
-				List<ChessGame> games = chessGameRepository.findAll(ChessGameSpecifications.openGame()
-					.and((ChessGameSpecifications.userOne(id).and(ChessGameSpecifications.userTwo(user.getId()))))
-						.or((ChessGameSpecifications.userTwo(id).and(ChessGameSpecifications.userOne(user.getId())))));
+				List<ChessGame> games = chessGameRepository.findAll(ChessGameSpecifications.openGame())
+					.stream()
+					.filter(game -> game.getUserOne().getId().equals(id) && game.getUserTwo().getId().equals(user.getId())
+						         || game.getUserTwo().getId().equals(id) && game.getUserOne().getId().equals(user.getId()))
+					.collect(Collectors.toList());
 
 				return challenges.isEmpty() && games.isEmpty();
 			})

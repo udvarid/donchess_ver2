@@ -306,17 +306,19 @@ public class GameMasterService {
 		validMovesDto.setChessGameId(chessGameId);
 		Set<CoordinateDto> coordinateDtos = new HashSet<>();
 
-		ChessTable chessTable = tableBuilderService.buildTable(chessGameId);
+		if (chessGame.getChessGameStatus().equals(ChessGameStatus.OPEN)) {
+			ChessTable chessTable = tableBuilderService.buildTable(chessGameId);
 
-		for (Figure figure : filterFigureByColor(chessGame, chessTable)) {
-			Set<ValidMove> validMoves = validMoveInspector
-				.allValidMoves(chessTable, new Coordinate(figure.getCoordX(), figure.getCoordY()));
-			Set<ValidMove> legalMoves = validMoves.stream()
-				.filter(vm -> moveValidator.validmove(chessTable,
-					setChessMoveDto(chessGameId, chessTable, figure, vm)) != null)
-				.collect(Collectors.toSet());
-			legalMoves
-				.forEach(lm -> coordinateDtos.add(coordinateDtoMapper(lm, figure)));
+			for (Figure figure : filterFigureByColor(chessGame, chessTable)) {
+				Set<ValidMove> validMoves = validMoveInspector
+					.allValidMoves(chessTable, new Coordinate(figure.getCoordX(), figure.getCoordY()));
+				Set<ValidMove> legalMoves = validMoves.stream()
+					.filter(vm -> moveValidator.validmove(chessTable,
+						setChessMoveDto(chessGameId, chessTable, figure, vm)) != null)
+					.collect(Collectors.toSet());
+				legalMoves
+					.forEach(lm -> coordinateDtos.add(coordinateDtoMapper(lm, figure)));
+			}
 		}
 
 		validMovesDto.setValidMoves(coordinateDtos);
