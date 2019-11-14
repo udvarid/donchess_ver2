@@ -68,7 +68,7 @@ public class TableBuilderService {
             chessTable.setLastPawnMoveNumber(chessMove.getMoveId());
             if (Math.abs(chessMove.getMoveToY() - chessMove.getMoveFromY()) > 1) {
                 chessTable.setLastMoveWasDoublePawn(true);
-                chessTable.setColumnIndexIfLastMoveWasDoublePawn(chessMove.getMoveToY());
+                chessTable.setColumnIndexIfLastMoveWasDoublePawn(chessMove.getMoveToX());
             }
         }
         if (figureToKill != null) {

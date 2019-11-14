@@ -150,7 +150,7 @@ public class GameMasterService {
 			chessTable.setLastPawnMoveNumber(chessTable.getActualMoveNumber());
 			if (Math.abs(chessMoveDto.getMoveFromY() - chessMoveDto.getMoveToY()) > 1) {
 				chessTable.setLastMoveWasDoublePawn(true);
-				chessTable.setColumnIndexIfLastMoveWasDoublePawn(figure.getCoordY());
+				chessTable.setColumnIndexIfLastMoveWasDoublePawn(figure.getCoordX());
 			}
 		}
 

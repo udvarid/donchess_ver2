@@ -214,6 +214,8 @@ public class ValidMoveInspector {
         } else if (chessTable.isLastMoveWasDoublePawn() &&
                 enPassanFigureToCheck != null &&
                 enPassanFigureToCheck.getFigureType().equals(ChessFigure.PAWN) &&
+                !figureToMove.getColor().equals(enPassanFigureToCheck.getColor()) &&
+                (figureToMove.getColor().equals(Color.WHITE) ? 5 : 4) == figureToMove.getCoordY() &&
                 chessTable.getColumnIndexIfLastMoveWasDoublePawn() == enPassanFigureToCheck.getCoordX() &&
                 validCoordinate(attack)) {
             validMoves.add(new ValidMove(attack, SpecialMoveType.EN_PASSAN));
