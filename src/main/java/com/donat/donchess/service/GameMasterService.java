@@ -59,7 +59,7 @@ public class GameMasterService {
 		this.entityManager = entityManager;
 	}
 
-	public void handleMove(ChessMoveDto chessMoveDto) {
+	public ResultDto handleMove(ChessMoveDto chessMoveDto) {
 
 		User user = securityService.getChallenger();
 
@@ -80,11 +80,18 @@ public class GameMasterService {
 
 		ValidMove validMove = moveValidator.validmove(chessTable, chessMoveDto);
 
+		ResultDto resultDto = new ResultDto();
+
 		if (validMove != null) {
-			makeMove(chessGame, chessTable, chessMoveDto, validMove);
+			ChessGame chessGameSaved = makeMove(chessGame, chessTable, chessMoveDto, validMove);
+			resultDto.setResult(chessGameSaved.getResult());
+			resultDto.setUserOne(chessGameSaved.getUserOne().getFullname());
+			resultDto.setUserTwo(chessGameSaved.getUserTwo().getFullname());
 		} else {
 			throw new InvalidException("Not valid move");
 		}
+
+		return resultDto;
 	}
 
 	private void commonExceptionHandling(User user, ChessGame chessGame) {
@@ -124,7 +131,7 @@ public class GameMasterService {
 			!(chessFigure.equals(ChessFigure.PAWN) || chessFigure.equals(ChessFigure.KING));
 	}
 
-	public void makeMove(ChessGame chessGame, ChessTable chessTable, ChessMoveDto chessMoveDto, ValidMove validMove) {
+	public ChessGame makeMove(ChessGame chessGame, ChessTable chessTable, ChessMoveDto chessMoveDto, ValidMove validMove) {
 		Figure figure = validMoveInspector
 			.findFigure(chessTable.getFigures(),
 				new Coordinate(chessMoveDto.getMoveFromX(), chessMoveDto.getMoveFromY()));
@@ -140,7 +147,7 @@ public class GameMasterService {
 		chessMoveRepository.saveAndFlush(chessMove);
 
 		setChessGame(chessGame, chessTable, chessMove);
-		chessGameRepository.saveAndFlush(chessGame);
+		return chessGameRepository.saveAndFlush(chessGame);
 	}
 
 	private void setChessTable(ChessTable chessTable, ChessMoveDto chessMoveDto, Figure figure, Figure aimFigure) {
@@ -368,7 +375,7 @@ public class GameMasterService {
 			.collect(Collectors.toList());
 	}
 
-	public void giveUp(long chessGameId) {
+	public ResultDto giveUp(long chessGameId) {
 		User user = securityService.getChallenger();
 
 		ChessGame chessGame = chessGameRepository.findById(chessGameId)
@@ -385,7 +392,14 @@ public class GameMasterService {
 		chessGame.setResult(chessGame.getNextMove().equals(Color.WHITE) ?
 			Result.WON_USER_TWO : Result.WON_USER_ONE);
 
-		chessGameRepository.saveAndFlush(chessGame);
+		ChessGame chessGameSaved = chessGameRepository.saveAndFlush(chessGame);
+
+		ResultDto resultDto = new ResultDto();
+		resultDto.setResult(chessGameSaved.getResult());
+		resultDto.setUserOne(chessGameSaved.getUserOne().getFullname());
+		resultDto.setUserTwo(chessGameSaved.getUserTwo().getFullname());
+
+		return resultDto;
 
 	}
 }

@@ -1,13 +1,11 @@
 package com.donat.donchess.controller;
 
-import com.donat.donchess.domain.enums.ChessGameStatus;
 import com.donat.donchess.dto.chessGame.ChessGameDto;
 import com.donat.donchess.dto.chessGame.ChessMoveDto;
 import com.donat.donchess.dto.chessGame.ChessTableDto;
+import com.donat.donchess.dto.chessGame.ResultDto;
 import com.donat.donchess.dto.chessGame.ValidMovesDto;
 import com.donat.donchess.service.GameMasterService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,9 +23,8 @@ public class GameController {
     }
 
     @PostMapping("/move")
-    public ResponseEntity create(@RequestBody ChessMoveDto chessMoveDto) {
-        gameMasterService.handleMove(chessMoveDto);
-        return new ResponseEntity(HttpStatus.OK);
+    public ResultDto create(@RequestBody ChessMoveDto chessMoveDto) {
+        return gameMasterService.handleMove(chessMoveDto);
     }
 
     @GetMapping
@@ -37,9 +34,8 @@ public class GameController {
 
     //TODO teszt írás
     @GetMapping("/giveUp/{id}")
-    public ResponseEntity giveUp(@PathVariable("id") long chessGameId) {
-        gameMasterService.giveUp(chessGameId);
-        return new ResponseEntity(HttpStatus.OK);
+    public ResultDto giveUp(@PathVariable("id") long chessGameId) {
+        return gameMasterService.giveUp(chessGameId);
     }
 
 
