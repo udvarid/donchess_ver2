@@ -7,6 +7,7 @@ import com.donat.donchess.model.enums.Color;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,6 +43,10 @@ public class ChessGame {
 
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<ChessMove> chessMoves = new ArrayList<>();
+
+    private LocalDateTime creationTime;
+
+    private LocalDateTime finishTime;
 
     //TODO később bevezetni az időperiódust és számon tartani, az egyes felhasználók rendelkezésre álló idejét
 
@@ -116,5 +121,21 @@ public class ChessGame {
 
     public void setNextMove(Color nextMove) {
         this.nextMove = nextMove;
+    }
+
+    public LocalDateTime getCreationTime() {
+        return creationTime;
+    }
+
+    public void setCreationTime(LocalDateTime creationTime) {
+        this.creationTime = creationTime;
+    }
+
+    public LocalDateTime getFinishTime() {
+        return finishTime;
+    }
+
+    public void setFinishTime(LocalDateTime finishTime) {
+        this.finishTime = finishTime;
     }
 }

@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import javax.inject.Provider;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -196,10 +197,12 @@ public class GameMasterService {
 		if (!chessMove.isChessGiven() && drawJudge.checkDraw(chessTable)) {
 			chessGame.setChessGameStatus(ChessGameStatus.CLOSED);
 			chessGame.setResult(Result.DRAWN);
+			chessGame.setFinishTime(LocalDateTime.now());
 		}
 		if (chessMove.isChessGiven() && drawJudge.noPossibleMove(chessTable)) {
 			chessGame.setChessGameStatus(ChessGameStatus.CLOSED);
 			chessGame.setResult(chessTable.getWhoIsNext().equals(Color.WHITE) ? Result.WON_USER_TWO : Result.WON_USER_ONE);
+			chessGame.setFinishTime(LocalDateTime.now());
 		}
 		chessGame.getChessMoves().add(chessMove);
 		chessGame.setLastMoveId(chessGame.getLastMoveId() + 1);
@@ -391,6 +394,8 @@ public class GameMasterService {
 
 		chessGame.setResult(chessGame.getNextMove().equals(Color.WHITE) ?
 			Result.WON_USER_TWO : Result.WON_USER_ONE);
+
+		chessGame.setFinishTime(LocalDateTime.now());
 
 		ChessGame chessGameSaved = chessGameRepository.saveAndFlush(chessGame);
 

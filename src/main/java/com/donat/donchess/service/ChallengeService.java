@@ -177,6 +177,7 @@ public class ChallengeService {
             chessGame.setUserOne(challenged);
             chessGame.setUserTwo(challenger);
         }
+        chessGame.setCreationTime(LocalDateTime.now());
 
         chessGameRepository.save(chessGame);
     }
