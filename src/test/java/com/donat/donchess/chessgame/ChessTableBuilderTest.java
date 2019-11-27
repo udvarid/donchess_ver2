@@ -162,7 +162,7 @@ public class ChessTableBuilderTest extends AncestorAbstract {
         assertTrue(pawnFigure.isMoved());
         assertTrue(chessTable.getLastPawnMoveNumber() == chessMove.getMoveId());
         assertTrue(chessTable.isLastMoveWasDoublePawn());
-        assertTrue(chessTable.getColumnIndexIfLastMoveWasDoublePawn() == chessMove.getMoveToY());
+        assertTrue(chessTable.getColumnIndexIfLastMoveWasDoublePawn() == chessMove.getMoveToX());
 
     }
 
