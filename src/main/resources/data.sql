@@ -6,7 +6,7 @@ insert into USERS (id, email, password, fullname, enabled) values (2, 'udvari.do
 insert into USERS_ROLES (user_id, role_id) values (1, 2);
 insert into USERS_ROLES (user_id, role_id) values (2, 1);
 
-/*
+
 
 
 insert into CHESS_GAMES (id, chess_game_status, chess_game_type, last_move_id, next_move, result,
@@ -36,4 +36,4 @@ insert into CHESS_MOVES (id, move_id, move_fromx, move_fromy, move_tox, move_toy
                          promote_type, special_move_type, chess_game_id) values (6, 6, 8, 7, 8, 6, null, 'NORMAL',1);
 insert into CHESS_GAMES_CHESS_MOVES (chess_game_id, chess_moves_id) values (1, 6);
 
-*/
+

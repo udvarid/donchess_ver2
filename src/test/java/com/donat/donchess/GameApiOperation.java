@@ -3,6 +3,7 @@ package com.donat.donchess;
 import com.donat.donchess.dto.chessGame.ChessGameDto;
 import com.donat.donchess.dto.chessGame.ChessMoveDto;
 import com.donat.donchess.dto.chessGame.ChessTableDto;
+import com.donat.donchess.dto.chessGame.ResultDto;
 import com.donat.donchess.dto.chessGame.ValidMovesDto;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
@@ -54,11 +55,12 @@ public class GameApiOperation {
         return result.getBody();
     }
 
-    public void chessMove(ChessMoveDto chessMoveDto) {
-        restTemplate.postForObject(
+    public ResultDto chessMove(ChessMoveDto chessMoveDto) {
+        ResultDto resultDto = restTemplate.postForObject(
                 endpointUrl + "/move",
                 chessMoveDto,
-                ResponseEntity.class);
+               ResultDto.class);
+        return resultDto;
     }
 
 }
