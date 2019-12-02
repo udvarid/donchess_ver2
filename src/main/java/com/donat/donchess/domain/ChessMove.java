@@ -44,6 +44,8 @@ public class ChessMove {
 
     private Boolean chessGiven = false;
 
+    private Boolean drawOffered = false;
+
     public ChessGame getChessGame() {
         return chessGame;
     }
@@ -122,5 +124,17 @@ public class ChessMove {
 
     public void setMoveToY(Integer moveToY) {
         this.moveToY = moveToY;
+    }
+
+    public Boolean getChessGiven() {
+        return chessGiven;
+    }
+
+    public Boolean getDrawOffered() {
+        return drawOffered;
+    }
+
+    public void setDrawOffered(Boolean drawOffered) {
+        this.drawOffered = drawOffered;
     }
 }

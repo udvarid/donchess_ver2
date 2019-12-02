@@ -38,8 +38,13 @@ public class GameController {
         return gameMasterService.giveUp(chessGameId);
     }
 
+	@GetMapping("/acceptDraw/{id}")
+	public ResultDto acceptDraw(@PathVariable("id") long chessGameId) {
+		return gameMasterService.acceptDraw(chessGameId);
+	}
 
-    //TODO teszt
+
+	//TODO teszt
     //TODO mapper
     @GetMapping("/list")
     public List<ChessGameDto> allChessGameForRequester() {

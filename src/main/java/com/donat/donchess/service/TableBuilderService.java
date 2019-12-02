@@ -105,6 +105,8 @@ public class TableBuilderService {
         //in case of chess, the moveAlready flag of the King should be set true
         setToMovedTheKingInCaseOfChess(chessTable, chessMove);
 
+        chessTable.setDrawWasOffered(chessMove.getDrawOffered() == null ? false : chessMove.getDrawOffered());
+
     }
 
     private void setToMovedTheKingInCaseOfChess(ChessTable chessTable, ChessMove chessMove) {

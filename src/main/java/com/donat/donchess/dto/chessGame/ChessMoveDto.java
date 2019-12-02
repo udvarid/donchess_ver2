@@ -27,6 +27,8 @@ public class ChessMoveDto {
 
     private String promoteToFigure;
 
+    private boolean drawOffered;
+
     public Long getGameId() {
         return gameId;
     }
@@ -82,4 +84,12 @@ public class ChessMoveDto {
     public void setPromoteToFigure(String promoteToFigure) {
         this.promoteToFigure = promoteToFigure;
     }
+
+	public boolean isDrawOffered() {
+		return drawOffered;
+	}
+
+	public void setDrawOffered(boolean drawOffered) {
+		this.drawOffered = drawOffered;
+	}
 }

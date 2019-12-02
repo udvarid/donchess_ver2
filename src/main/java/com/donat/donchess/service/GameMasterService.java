@@ -190,6 +190,7 @@ public class GameMasterService {
 		chessMove.setMoveToY(chessMoveDto.getMoveToY());
 		chessMove.setMoveId(chessGame.getLastMoveId() + 1);
 		chessMove.setChessGiven(chessGiven(chessTable, figure));
+		chessMove.setDrawOffered(chessMoveDto.isDrawOffered());
 		return chessMove;
 	}
 
@@ -286,6 +287,7 @@ public class GameMasterService {
 			.stream()
 			.map(figure -> figureDtoMapper(figure))
 			.collect(Collectors.toSet()));
+		chessTableDto.setDrawOffered(chessTable.isDrawWasOffered());
 
 		return chessTableDto;
 	}
@@ -379,6 +381,15 @@ public class GameMasterService {
 	}
 
 	public ResultDto giveUp(long chessGameId) {
+		return finishByUser(chessGameId, false);
+
+	}
+
+	public ResultDto acceptDraw(long chessGameId) {
+		return finishByUser(chessGameId, true);
+	}
+
+	public ResultDto finishByUser(long chessGameId, boolean isDraw) {
 		User user = securityService.getChallenger();
 
 		ChessGame chessGame = chessGameRepository.findById(chessGameId)
@@ -392,8 +403,12 @@ public class GameMasterService {
 
 		chessGame.setChessGameStatus(ChessGameStatus.CLOSED);
 
-		chessGame.setResult(chessGame.getNextMove().equals(Color.WHITE) ?
-			Result.WON_USER_TWO : Result.WON_USER_ONE);
+		if (isDraw) {
+			chessGame.setResult(Result.DRAWN);
+		} else {
+			chessGame.setResult(chessGame.getNextMove().equals(Color.WHITE) ?
+				Result.WON_USER_TWO : Result.WON_USER_ONE);
+		}
 
 		chessGame.setFinishTime(LocalDateTime.now());
 
@@ -405,6 +420,5 @@ public class GameMasterService {
 		resultDto.setUserTwo(chessGameSaved.getUserTwo().getFullname());
 
 		return resultDto;
-
 	}
 }

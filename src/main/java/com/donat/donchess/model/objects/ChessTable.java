@@ -23,6 +23,8 @@ public class ChessTable {
 
     private int columnIndexIfLastMoveWasDoublePawn;
 
+    private boolean drawWasOffered;
+
     public Long getChessGameId() {
         return chessGameId;
     }
@@ -85,5 +87,13 @@ public class ChessTable {
 
     public void setColumnIndexIfLastMoveWasDoublePawn(int columnIndexIfLastMoveWasDoublePawn) {
         this.columnIndexIfLastMoveWasDoublePawn = columnIndexIfLastMoveWasDoublePawn;
+    }
+
+    public boolean isDrawWasOffered() {
+        return drawWasOffered;
+    }
+
+    public void setDrawWasOffered(boolean drawWasOffered) {
+        this.drawWasOffered = drawWasOffered;
     }
 }

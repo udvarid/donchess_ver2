@@ -35,6 +35,8 @@ public class ChessTableDto {
 
     private Set<FigureDto> figures = new HashSet<>();
 
+    private boolean drawOffered;
+
     public Long getChessGameId() {
         return chessGameId;
     }
@@ -105,5 +107,13 @@ public class ChessTableDto {
 
     public void setFigures(Set<FigureDto> figures) {
         this.figures = figures;
+    }
+
+    public boolean isDrawOffered() {
+        return drawOffered;
+    }
+
+    public void setDrawOffered(boolean drawOffered) {
+        this.drawOffered = drawOffered;
     }
 }
