@@ -289,6 +289,8 @@ public class GameMasterService {
 			.collect(Collectors.toSet()));
 		chessTableDto.setDrawOffered(chessTable.isDrawWasOffered());
 
+		chessTableDto.setMoveHistory(chessTable.getMoveHistory());
+
 		return chessTableDto;
 	}
 

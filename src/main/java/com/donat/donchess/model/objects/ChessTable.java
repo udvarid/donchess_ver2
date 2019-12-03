@@ -25,6 +25,8 @@ public class ChessTable {
 
     private boolean drawWasOffered;
 
+    private String moveHistory;
+
     public Long getChessGameId() {
         return chessGameId;
     }
@@ -95,5 +97,13 @@ public class ChessTable {
 
     public void setDrawWasOffered(boolean drawWasOffered) {
         this.drawWasOffered = drawWasOffered;
+    }
+
+    public String getMoveHistory() {
+        return moveHistory;
+    }
+
+    public void setMoveHistory(String moveHistory) {
+        this.moveHistory = moveHistory;
     }
 }

@@ -8,6 +8,7 @@ import com.donat.donchess.model.enums.Color;
 
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.Lob;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -36,6 +37,9 @@ public class ChessTableDto {
     private Set<FigureDto> figures = new HashSet<>();
 
     private boolean drawOffered;
+
+    @Lob
+    private String moveHistory;
 
     public Long getChessGameId() {
         return chessGameId;
@@ -115,5 +119,13 @@ public class ChessTableDto {
 
     public void setDrawOffered(boolean drawOffered) {
         this.drawOffered = drawOffered;
+    }
+
+    public String getMoveHistory() {
+        return moveHistory;
+    }
+
+    public void setMoveHistory(String moveHistory) {
+        this.moveHistory = moveHistory;
     }
 }
