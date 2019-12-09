@@ -15,6 +15,7 @@ import com.donat.donchess.repository.ChessGameRepository;
 import com.donat.donchess.repository.ChessGameSpecifications;
 import com.donat.donchess.repository.RoleRepository;
 import com.donat.donchess.repository.UserRepository;
+import com.donat.donchess.repository.UserSpecifications;
 import com.donat.donchess.security.UserDetailsImpl;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import net.bytebuddy.utility.RandomString;
@@ -33,7 +34,10 @@ import javax.inject.Provider;
 import javax.persistence.EntityManager;
 import javax.servlet.http.HttpServletRequest;
 import javax.transaction.Transactional;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -108,6 +112,7 @@ public class UserService implements UserDetailsService {
 		newUser.getRoles().add(role);
 		newUser.setEnabled(false);
 		newUser.setAuthenticationToken(RandomString.make(20));
+		newUser.setTimeOfRegistration(LocalDateTime.now());
 
 		emailService.sendAuthenticatonMail(newUser);
 
@@ -210,5 +215,16 @@ public class UserService implements UserDetailsService {
 
 		return userDtos;
 
+	}
+
+	public void deleteOldRegistration() {
+		List<User> users = userRepository.findAll(UserSpecifications.unfinishedRegistration());
+		Iterator<User> iterator = users.iterator();
+		while (iterator.hasNext()) {
+			User user = iterator.next();
+			if (ChronoUnit.HOURS.between(user.getTimeOfRegistration(), LocalDateTime.now()) > 48) {
+				userRepository.delete(user);
+			}
+		}
 	}
 }
