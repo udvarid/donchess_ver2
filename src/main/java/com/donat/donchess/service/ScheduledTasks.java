@@ -10,10 +10,23 @@ public class ScheduledTasks {
 	@Autowired
 	private UserService userService;
 
+	@Autowired
+	private BotService botService;
+
+	@Autowired
+	private ChallengeService challengeService;
+
 	//2 naponta törli a 2 napnál régebbi regisztrációkat
 	@Scheduled(fixedDelay = 60000 * 60 * 24 * 2)
 	private void deleteOldRegistrations() {
 		userService.deleteOldRegistration();
 	}
+
+	@Scheduled(fixedDelay = 5000)
+	private void botTurn() {
+		challengeService.acceptAllChallengeForBots();
+		botService.makeMove();
+	}
+
 
 }

@@ -60,14 +60,16 @@ public class GameMasterService {
 		this.entityManager = entityManager;
 	}
 
-	public ResultDto handleMove(ChessMoveDto chessMoveDto) {
+	public ResultDto handleMove(ChessMoveDto chessMoveDto, boolean isAPlayer) {
 
-		User user = securityService.getChallenger();
 
 		ChessGame chessGame = chessGameRepository.findById(chessMoveDto.getGameId())
 			.orElseThrow(() -> new NotFoundException("Game can not be found"));
 
-		commonExceptionHandling(user, chessGame);
+		if (isAPlayer) {
+			User user = securityService.getChallenger();
+			commonExceptionHandling(user, chessGame);
+		}
 
 		if (chessMoveDto.getMoveId() != chessGame.getLastMoveId() + 1) {
 			throw new InvalidException("This is not the proper move id!");
@@ -308,6 +310,7 @@ public class GameMasterService {
 		UserDto userDto = new UserDto();
 		userDto.setFullName(user.getFullname());
 		userDto.setId(user.getId());
+		userDto.setRole(user.getRoles().get(0).getRole());
 
 		return userDto;
 	}
@@ -318,7 +321,7 @@ public class GameMasterService {
 			.orElseThrow(() -> new NotFoundException("ChessGame id is not valid"));
 		ValidMovesDto validMovesDto = new ValidMovesDto();
 		validMovesDto.setChessGameId(chessGameId);
-		Set<CoordinateDto> coordinateDtos = new HashSet<>();
+		List<CoordinateDto> coordinateDtos = new ArrayList<>();
 
 		if (chessGame.getChessGameStatus().equals(ChessGameStatus.OPEN)) {
 			ChessTable chessTable = tableBuilderService.buildTable(chessGameId);

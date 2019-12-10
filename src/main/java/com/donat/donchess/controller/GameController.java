@@ -24,7 +24,7 @@ public class GameController {
 
     @PostMapping("/move")
     public ResultDto create(@RequestBody ChessMoveDto chessMoveDto) {
-        return gameMasterService.handleMove(chessMoveDto);
+        return gameMasterService.handleMove(chessMoveDto, true);
     }
 
     @GetMapping

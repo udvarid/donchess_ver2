@@ -3,6 +3,7 @@ package com.donat.donchess.service;
 import com.donat.donchess.domain.Challenge;
 import com.donat.donchess.domain.ChessGame;
 import com.donat.donchess.domain.QChallenge;
+import com.donat.donchess.domain.Role;
 import com.donat.donchess.domain.User;
 import com.donat.donchess.domain.enums.ChessGameStatus;
 import com.donat.donchess.domain.enums.ChessGameType;
@@ -26,8 +27,10 @@ import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -219,5 +222,29 @@ public class ChallengeService {
         });
 
         return challengeDtos;
+    }
+
+    public void acceptAllChallengeForBots() {
+
+        List<Challenge> challenges = challengeRepository.findAll()
+            .stream()
+            .filter(ch -> isBot(ch.getChallenged()))
+            .collect(Collectors.toList());
+
+        Iterator<Challenge> iterator = challenges.iterator();
+        while (iterator.hasNext()) {
+            Challenge challenge = iterator.next();
+            createNewGame(challenge.getChallenger(), challenge.getChallenged());
+            challengeRepository.delete(challenge);
+        }
+    }
+
+    private boolean isBot(User challenged) {
+        for (Role role : challenged.getRoles()) {
+            if (role.getRole().equals("ROLE_ADMIN") || role.getRole().equals("ROLE_USER")) {
+                return false;
+            }
+        }
+        return true;
     }
 }
