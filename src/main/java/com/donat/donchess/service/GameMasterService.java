@@ -19,6 +19,7 @@ import com.donat.donchess.model.objects.ValidMove;
 import com.donat.donchess.repository.ChessGameRepository;
 import com.donat.donchess.repository.ChessMoveRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Provider;
@@ -40,6 +41,7 @@ public class GameMasterService {
 	private ChessMoveRepository chessMoveRepository;
 	private ValidMoveInspector validMoveInspector;
 	private Provider<EntityManager> entityManager;
+	private SimpMessagingTemplate template;
 
 
 	public GameMasterService(TableBuilderService tableBuilderService,
@@ -49,7 +51,8 @@ public class GameMasterService {
 		ChessGameRepository chessGameRepository,
 		ChessMoveRepository chessMoveRepository,
 		ValidMoveInspector validMoveInspector,
-		Provider<EntityManager> entityManager) {
+		Provider<EntityManager> entityManager,
+		SimpMessagingTemplate template) {
 		this.tableBuilderService = tableBuilderService;
 		this.moveValidator = moveValidator;
 		this.drawJudge = drawJudge;
@@ -58,6 +61,7 @@ public class GameMasterService {
 		this.chessMoveRepository = chessMoveRepository;
 		this.validMoveInspector = validMoveInspector;
 		this.entityManager = entityManager;
+		this.template = template;
 	}
 
 	public ResultDto handleMove(ChessMoveDto chessMoveDto, boolean isAPlayer) {
@@ -93,6 +97,8 @@ public class GameMasterService {
 		} else {
 			throw new InvalidException("Not valid move");
 		}
+
+		template.convertAndSend("/topic/notification", chessGame.getId());
 
 		return resultDto;
 	}
