@@ -20,7 +20,6 @@ import com.donat.donchess.repository.ChessGameRepository;
 import com.donat.donchess.repository.UserRepository;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import org.apache.commons.lang3.EnumUtils;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Provider;
@@ -43,19 +42,16 @@ public class ChallengeService {
     private SecurityService securityService;
     private ChessGameRepository chessGameRepository;
     private Provider<EntityManager> entityManager;
-    private SimpMessagingTemplate template;
 
 
     public ChallengeService(ChallengeRepository challengeRepository, UserRepository userRepository,
                             SecurityService securityService, ChessGameRepository chessGameRepository,
-        Provider<EntityManager> entityManager,
-        SimpMessagingTemplate template) {
+        Provider<EntityManager> entityManager) {
         this.challengeRepository = challengeRepository;
         this.userRepository = userRepository;
         this.securityService = securityService;
         this.chessGameRepository = chessGameRepository;
         this.entityManager = entityManager;
-        this.template = template;
     }
 
     public Set<ChallengeDto> findAll() {
@@ -118,7 +114,6 @@ public class ChallengeService {
         newChallenge.setCreatonTime(LocalDateTime.now());
 
         challengeRepository.saveAndFlush(newChallenge);
-        template.convertAndSend("/topic/notificationChallenge", "Refreshed");
     }
 
     private void verifyOpenChallenges(User challenger) {
@@ -170,7 +165,6 @@ public class ChallengeService {
 
         challengeRepository.delete(challenge);
 
-        template.convertAndSend("/topic/notificationChallenge", "Refreshed");
     }
 
     private void createNewGame(User challenger, User challenged) {
@@ -245,9 +239,6 @@ public class ChallengeService {
             challengeRepository.delete(challenge);
         }
 
-        if (!challenges.isEmpty()) {
-            template.convertAndSend("/topic/notificationChallenge", "Refreshed");
-        }
     }
 
     private boolean isBot(User challenged) {
