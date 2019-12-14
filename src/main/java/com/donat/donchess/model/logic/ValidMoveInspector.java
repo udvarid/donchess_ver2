@@ -179,15 +179,16 @@ public class ValidMoveInspector {
     private void fillValidMovesForPawn(Set<ValidMove> validMoves, Figure figureToMove, ChessTable chessTable) {
         int mirror = figureToMove.getColor().equals(Color.WHITE) ? 1 : -1;
         Figure figureToCheck = null;
+        Figure figureToCheckTwoStepsAhead = null;
 
         Coordinate oneStepfw = new Coordinate(figureToMove.getCoordX(), figureToMove.getCoordY() + 1 * mirror);
         figureToCheck = findFigure(chessTable.getFigures(), oneStepfw);
         validGoalForPawnMovingAndAdd(validMoves, oneStepfw, figureToCheck);
 
         Coordinate twoStepfw = new Coordinate(figureToMove.getCoordX(), figureToMove.getCoordY() + 2 * mirror);
-        figureToCheck = findFigure(chessTable.getFigures(), twoStepfw);
+        figureToCheckTwoStepsAhead = findFigure(chessTable.getFigures(), twoStepfw);
         if (!figureToMove.isMoved()) {
-            validGoalForPawnMovingAndAdd(validMoves, twoStepfw, figureToCheck);
+            validGoalForPawnMovingAndAddDouple(validMoves, twoStepfw, figureToCheck, figureToCheckTwoStepsAhead);
         }
 
         Coordinate attackLeft = new Coordinate(figureToMove.getCoordX() - 1, figureToMove.getCoordY() + 1 * mirror);
@@ -224,6 +225,12 @@ public class ValidMoveInspector {
 
     private void validGoalForPawnMovingAndAdd(Set<ValidMove> validMoves, Coordinate aimCoord, Figure figureToCheck) {
         if (validCoordinate(aimCoord) && figureToCheck == null) {
+            validMoves.add(new ValidMove(aimCoord, SpecialMoveType.NORMAL));
+        }
+    }
+
+    private void validGoalForPawnMovingAndAddDouple(Set<ValidMove> validMoves, Coordinate aimCoord, Figure figureToCheck, Figure figureToCheckTwoStepsAhead) {
+        if (validCoordinate(aimCoord) && figureToCheck == null && figureToCheckTwoStepsAhead == null) {
             validMoves.add(new ValidMove(aimCoord, SpecialMoveType.NORMAL));
         }
     }
