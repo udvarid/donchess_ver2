@@ -32,7 +32,6 @@ public class GameController {
         return gameMasterService.findChessgames(false);
     }
 
-    //TODO teszt írás
     @GetMapping("/giveUp/{id}")
     public ResultDto giveUp(@PathVariable("id") long chessGameId) {
         return gameMasterService.giveUp(chessGameId);
@@ -43,9 +42,6 @@ public class GameController {
 		return gameMasterService.acceptDraw(chessGameId);
 	}
 
-
-	//TODO teszt
-    //TODO mapper
     @GetMapping("/list")
     public List<ChessGameDto> allChessGameForRequester() {
         return gameMasterService.findChessgamesForRequester();
@@ -60,7 +56,5 @@ public class GameController {
     public ValidMovesDto findValidMoves(@PathVariable("id") long chessGameId) {
         return gameMasterService.giveValidMoves(chessGameId);
     }
-
-    //TODO propose draw action + all the necessery methods to handle this
 
 }

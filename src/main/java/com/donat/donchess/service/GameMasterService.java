@@ -326,29 +326,33 @@ public class GameMasterService {
 	public ValidMovesDto giveValidMoves(long chessGameId) {
 		ChessGame chessGame = chessGameRepository.findById(chessGameId)
 			.orElseThrow(() -> new NotFoundException("ChessGame id is not valid"));
-		ValidMovesDto validMovesDto = new ValidMovesDto();
-		validMovesDto.setChessGameId(chessGameId);
-		List<CoordinateDto> coordinateDtos = new ArrayList<>();
 
-		if (chessGame.getChessGameStatus().equals(ChessGameStatus.OPEN)) {
-			ChessTable chessTable = tableBuilderService.buildTable(chessGameId);
-
-			for (Figure figure : filterFigureByColor(chessGame, chessTable)) {
-				Set<ValidMove> validMoves = validMoveInspector
-					.allValidMoves(chessTable, new Coordinate(figure.getCoordX(), figure.getCoordY()));
-				Set<ValidMove> legalMoves = validMoves.stream()
-					.filter(vm -> moveValidator.validmove(chessTable,
-						setChessMoveDto(chessGameId, chessTable, figure, vm)) != null)
-					.collect(Collectors.toSet());
-				legalMoves
-					.forEach(lm -> coordinateDtos.add(coordinateDtoMapper(lm, figure)));
-			}
+		if (!chessGame.getChessGameStatus().equals(ChessGameStatus.OPEN)) {
+			ValidMovesDto validMovesDto = new ValidMovesDto();
+			validMovesDto.setChessGameId(chessGameId);
+			return validMovesDto;
 		}
+		return createValidMoves(tableBuilderService.buildTable(chessGameId));
+	}
 
+	private ValidMovesDto createValidMoves(ChessTable chessTable) {
+		ValidMovesDto validMovesDto = new ValidMovesDto();
+		validMovesDto.setChessGameId(chessTable.getChessGameId());
+		List<CoordinateDto> coordinateDtos = new ArrayList<>();
+		for (Figure figure : filterFigureByColor(chessTable)) {
+			Set<ValidMove> validMoves = validMoveInspector
+				.allValidMoves(chessTable, new Coordinate(figure.getCoordX(), figure.getCoordY()));
+			Set<ValidMove> legalMoves = validMoves.stream()
+				.filter(vm -> moveValidator.validmove(chessTable,
+					setChessMoveDto(chessTable.getChessGameId(), chessTable, figure, vm)) != null)
+				.collect(Collectors.toSet());
+			legalMoves
+				.forEach(lm -> coordinateDtos.add(coordinateDtoMapper(lm, figure)));
+		}
 		validMovesDto.setValidMoves(coordinateDtos);
-
 		return validMovesDto;
 	}
+
 
 	private CoordinateDto coordinateDtoMapper(ValidMove lm, Figure figure) {
 		CoordinateDto coordinateDto = new CoordinateDto();
@@ -372,10 +376,10 @@ public class GameMasterService {
 		return chessMoveDto;
 	}
 
-	private Set<Figure> filterFigureByColor(ChessGame chessGame, ChessTable chessTable) {
+	private Set<Figure> filterFigureByColor(ChessTable chessTable) {
 		return chessTable.getFigures()
 			.stream()
-			.filter(figure -> figure.getColor().equals(chessGame.getNextMove()))
+			.filter(figure -> figure.getColor().equals(chessTable.getWhoIsNext()))
 			.collect(Collectors.toSet());
 	}
 

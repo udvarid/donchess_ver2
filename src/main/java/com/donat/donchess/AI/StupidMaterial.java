@@ -1,9 +1,9 @@
 package com.donat.donchess.AI;
 
-import com.donat.donchess.dto.chessGame.ChessTableDto;
 import com.donat.donchess.dto.chessGame.CoordinateDto;
-import com.donat.donchess.dto.chessGame.FigureDto;
 import com.donat.donchess.model.enums.ChessFigure;
+import com.donat.donchess.model.objects.ChessTable;
+import com.donat.donchess.model.objects.Figure;
 
 public class StupidMaterial extends EvaluatorWeight implements Evaluator {
 
@@ -12,12 +12,12 @@ public class StupidMaterial extends EvaluatorWeight implements Evaluator {
 	}
 
 	@Override
-	public int giveScore(CoordinateDto validMove, ChessTableDto chessTable) {
+	public int giveScore(CoordinateDto validMove, ChessTable chessTable) {
 		return getFigureValue(validMove, chessTable) * getWeight();
 	}
 
-	private int getFigureValue(CoordinateDto validMove, ChessTableDto chessTableDto) {
-		for (FigureDto figure : chessTableDto.getFigures()) {
+	private int getFigureValue(CoordinateDto validMove, ChessTable chessTable) {
+		for (Figure figure : chessTable.getFigures()) {
 			if (figure.getCoordX() == validMove.getToX() && figure.getCoordY() == validMove.getToY()) {
 				return giveValue(figure.getFigureType());
 			}
