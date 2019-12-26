@@ -308,6 +308,7 @@ public class GameMasterService {
 		figureDto.setCoordX(figure.getCoordX());
 		figureDto.setCoordY(figure.getCoordY());
 		figureDto.setFigureType(figure.getFigureType());
+		figureDto.setMoved(figure.isMoved());
 
 		return figureDto;
 	}

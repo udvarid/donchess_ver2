@@ -18,6 +18,8 @@ public class FigureDto {
 
     private int coordY;
 
+    private boolean moved;
+
     public ChessFigure getFigureType() {
         return figureType;
     }
@@ -48,6 +50,14 @@ public class FigureDto {
 
     public void setCoordY(int coordY) {
         this.coordY = coordY;
+    }
+
+    public boolean isMoved() {
+        return moved;
+    }
+
+    public void setMoved(boolean moved) {
+        this.moved = moved;
     }
 
     @Override

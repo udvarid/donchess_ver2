@@ -1,11 +1,16 @@
 package com.donat.donchess.service;
 
-import java.util.Random;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 
-import com.donat.donchess.model.enums.ChessFigure;
+import com.donat.donchess.AI.Brain;
+import com.donat.donchess.AI.Evaluator;
+import com.donat.donchess.AI.LightOfficerDeveloper;
+import com.donat.donchess.AI.RandomBoy;
+import com.donat.donchess.AI.StupidMaterial;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.donat.donchess.dto.chessGame.ChessGameDto;
@@ -23,83 +28,51 @@ public class BotStrategyService {
     @Autowired
     private GameMasterService gameMasterService;
 
-    private Random random = new Random();
-
     public ChessMoveDto giveMove(ChessGameDto game) {
         ChessMoveDto chessMoveDto = new ChessMoveDto();
+        Brain brain = new Brain();
         if (getRole(game).equals("ROLE_BOT0")) {
-            chessMoveDto = simpleStrategy(game);
+            brain.addEvaluator(new RandomBoy(100));
+            chessMoveDto = strategy(game, brain);
         }
         if (getRole(game).equals("ROLE_BOT1")) {
-            chessMoveDto = materialStrategy(game);
+            brain.addEvaluator(new StupidMaterial(100));
+            chessMoveDto = strategy(game, brain);
+        }
+        if (getRole(game).equals("ROLE_BOT2")) {
+            brain.addEvaluator(new LightOfficerDeveloper(5));
+            chessMoveDto = strategy(game, brain);
         }
         return chessMoveDto;
     }
 
-    private ChessMoveDto materialStrategy(ChessGameDto game) {
+
+    private ChessMoveDto strategy(ChessGameDto game, Brain brain) {
         ValidMovesDto validMoves = gameMasterService.giveValidMoves(game.getChessGameId());
         ChessTableDto chessTableDto = gameMasterService.giveChessTable(game.getChessGameId());
-        int initScore = calculateTableValue(chessTableDto);
-        int maxScore = initScore;
-		CoordinateDto choosenCoordinate = validMoves.getValidMoves().get(0);
+
+        List<Integer> scores = new ArrayList<>();
+        Integer max = Integer.MIN_VALUE;
         for (CoordinateDto validMove : validMoves.getValidMoves()) {
-			int killedFigureValue = getFigureValue(validMove, chessTableDto);
-			if (initScore + killedFigureValue > maxScore) {
-				choosenCoordinate = validMove;
-				maxScore = initScore + killedFigureValue;
-			}
+            Integer score = 0;
+            for (Evaluator evaluator : brain.getEvaluators()) {
+                score += evaluator.giveScore(validMove, chessTableDto);
+            }
+            scores.add(score);
+            if (max < score) {
+                max = score;
+            }
         }
-        return getChessMoveDto(game, chessTableDto,choosenCoordinate);
-    }
 
-	private int getFigureValue(CoordinateDto validMove, ChessTableDto chessTableDto) {
-		for (FigureDto figure : chessTableDto.getFigures()) {
-			if (figure.getCoordX() == validMove.getToX() && figure.getCoordY() == validMove.getToY()) {
-				return giveValue(figure.getFigureType());
-			}
-		}
-    	return 0;
-	}
-
-
-	private int calculateTableValue(ChessTableDto chessTable) {
-        int whiteValue = chessTable.getFigures()
-                .stream()
-                .filter(figureDto -> figureDto.getColor().equals(Color.WHITE))
-                .map(figureDto -> giveValue(figureDto.getFigureType()))
-                .mapToInt(Integer::intValue)
-                .sum();
-        int blackValue = chessTable.getFigures()
-                .stream()
-                .filter(figureDto -> figureDto.getColor().equals(Color.BLACK))
-                .map(figureDto -> giveValue(figureDto.getFigureType()))
-                .mapToInt(Integer::intValue)
-                .sum();
-        return chessTable.getNextMove().equals(Color.WHITE) ? whiteValue - blackValue : blackValue - whiteValue;
-    }
-
-    private Integer giveValue(ChessFigure figureType) {
-        Integer value = 0;
-        if (figureType.equals(ChessFigure.PAWN)) {
-            value = 1;
-        } else if (figureType.equals(ChessFigure.ROOK)) {
-            value = 5;
-        } else if (figureType.equals(ChessFigure.KNIGHT)) {
-            value = 3;
-        } else if (figureType.equals(ChessFigure.BISHOP)) {
-            value = 3;
-        } else if (figureType.equals(ChessFigure.QUEEN)) {
-            value = 8;
+        List<Integer> maxScores = new ArrayList<>();
+        for (int i = 0; i < scores.size(); i++) {
+            if (scores.get(i).equals(max)) {
+                maxScores.add(i);
+            }
         }
-        return value;
-    }
 
-
-    private ChessMoveDto simpleStrategy(ChessGameDto game) {
-        ValidMovesDto validMoves = gameMasterService.giveValidMoves(game.getChessGameId());
-        ChessTableDto chessTableDto = gameMasterService.giveChessTable(game.getChessGameId());
-        int index = random.nextInt(validMoves.getValidMoves().size());
-        CoordinateDto validMove = validMoves.getValidMoves().get(index);
+        Collections.shuffle(maxScores);
+        CoordinateDto validMove = validMoves.getValidMoves().get(maxScores.get(0));
         return getChessMoveDto(game, chessTableDto, validMove);
     }
 
