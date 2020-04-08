@@ -317,7 +317,8 @@ public class GameMasterService {
 		UserDto userDto = new UserDto();
 		userDto.setFullName(user.getFullname());
 		userDto.setId(user.getId());
-		userDto.setRole(user.getRoles().get(0).getRole());
+		Role role = (Role) user.getRoles().toArray()[0];
+		userDto.setRole(role.getRole());
 
 		return userDto;
 	}

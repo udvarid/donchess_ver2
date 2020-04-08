@@ -1,9 +1,11 @@
 package com.donat.donchess.domain;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "users")
@@ -13,10 +15,14 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "email", length = 250, unique = true, nullable = false)
+    @Size(max=250)
+    @NotNull
+    @Column(name = "email", unique = true)
     private String email;
 
-    @Column(name = "password", length = 250, nullable = false)
+    @Size(max=250)
+    @NotNull
+    @Column(name = "password")
     private String password;
 
     private String fullname;
@@ -33,7 +39,7 @@ public class User {
             joinColumns = {@JoinColumn(name = "user_id")},
             inverseJoinColumns = {@JoinColumn(name = "role_id")}
     )
-    private List<Role> roles = new ArrayList<>();
+    private Set<Role> roles = new HashSet<>();
 
     public Long getId() {
         return id;
@@ -67,11 +73,11 @@ public class User {
         this.fullname = fullname;
     }
 
-    public List<Role> getRoles() {
+    public Set<Role> getRoles() {
         return roles;
     }
 
-    public void setRoles(List<Role> roles) {
+    public void setRoles(Set<Role> roles) {
         this.roles = roles;
     }
 
